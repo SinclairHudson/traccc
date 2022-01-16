@@ -2,6 +2,13 @@
 
 Tracking sports balls
 
+To run the project, including its neural networks fast, requires a good system.
+At minimum: **5GB** disk space.
+
+# Application quickstart
+
+This application uses [docker](www.docker.com), a popular
+
 # Model training quickstart
 
 This project uses a docker image built off of an NVIDIA image, to allow for 

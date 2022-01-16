@@ -4,3 +4,5 @@ WORKDIR /workspace
 
 RUN mkdir /datasets
 
+RUN pip install filterpy
+
