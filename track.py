@@ -5,13 +5,13 @@ from filterpy.kalman import KalmanFilter
 import numpy as np
 from math import sqrt
 from scipy.optimize import linear_sum_assignment
-from trackers import Tracker
+from trackers import Track
+from tqdm import tqdm
+import yaml
 
 
-next_track_id = 0  # counter for track IDs
-
-def euclidean_distance(track, detection):
-    return sqrt((track.state[0] - detection[0]) ** 2 + (track.state[1] - detection[1]) ** 2)
+def euclidean_distance(track: Track, detection):
+    return sqrt((track.kf.x[0] - detection[0]) ** 2 + (track.kf.x[1] - detection[1]) ** 2)
 
 def hungarian_matching(tracks, detections, cost_function=euclidean_distance):
     """
@@ -26,12 +26,18 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance):
             cost_matrix[i][j] = cost_function(track, detection)
 
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    return row_ind, col_ind
 
 
 def track(detections, death_time=5):
+    next_track_id = 0  # counter for track IDs
+    inactive_tracks = []
     tracks = []
-    for frame_number, frame_detections in enumerate(detections):
+    for frame_number, frame_name in tqdm(enumerate(detections)):
         # handle deaths; if a track hasn't been seen in a few frames, delete it.
+        frame_detections = detections[frame_name]
+
+        inactive_tracks.extend([track for track in tracks if track.time_missing >= death_time])
         tracks = [track for track in tracks if track.time_missing < death_time]
         for track in tracks:
             track.predict()  # advance the Kalman Filter, to get the prior for this timestep
@@ -43,15 +49,41 @@ def track(detections, death_time=5):
 
         else:  # there are some detections
             if len(tracks) > 0:
-                matching = hungarian_matching(tracks, frame_detections)
+                row_ind, col_ind = hungarian_matching(tracks, frame_detections)
+                for i in range(len(row_ind)):
+                    # update the matched tracks
+                    tracks[row_ind[i]].update(frame_detections[col_ind[i]][:2])  # update using xy
 
-            # handle births
-            for detection in detections:
-                tracks.append(Tracker(next_track_id, detection, frame_number))
-                next_track_id += 1
+                unmatched_track_indices = set(range(len(tracks))) - set(row_ind)
+                for i in unmatched_track_indices:
+                    tracks[i].update(None)
+
+                # births
+                unmatched_detection_indices = set(range(len(frame_detections))) - set(col_ind)
+                for i in unmatched_detection_indices:
+                    tracks.append(Track(next_track_id, frame_detections[i], frame_number))
+
+            else:  # no tracks, but detections
+                # births
+                for detection in frame_detections:
+                    tracks.append(Track(next_track_id, detection, frame_number))
+                    next_track_id += 1
+
+    inactive_tracks.extend(tracks)
+    return inactive_tracks
 
 
 
 
 if __name__ == "__main__":
+    detections = np.load("io/detections.npz")
+    tracks = track(detections)
+
+    track_lives = [track.encode_in_dictionary() for track in tracks]
+    dictionary = {
+        "detections_file": "io/detections.npz",
+        "tracks": track_lives
+    }
+    with open("tracks.yaml", 'w') as f:
+        yaml.safe_dump(dictionary, f)
 
