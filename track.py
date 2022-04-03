@@ -76,14 +76,14 @@ def track(detections, death_time=5):
 
 
 if __name__ == "__main__":
-    detections = np.load("io/detections.npz")
+    detections = np.load("io/living_room.npz")
     tracks = track(detections)
 
     track_lives = [track.encode_in_dictionary() for track in tracks]
     dictionary = {
-        "detections_file": "io/detections.npz",
+        "detections_file": "io/living_room.npz",
         "tracks": track_lives
     }
-    with open("tracks.yaml", 'w') as f:
+    with open("io/living_room.yaml", 'w') as f:
         yaml.safe_dump(dictionary, f)
 

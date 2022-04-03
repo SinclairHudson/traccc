@@ -60,7 +60,7 @@ class RawPretrainedDetector(Detector):
 
 
     @torch.no_grad()
-    def detect_video(self, video: torch.Tensor, bbox_format="cxcywh"):
+    def detect_video(self, video: torch.Tensor, bbox_format="cxcywh", conf_threshold=0.5):
         """
         video is a sequence of frames THWC (time, height, width, channel), pytorch tensor
         output is a list of numpy arrays denoting bounding boxes for each frame
@@ -88,7 +88,8 @@ class RawPretrainedDetector(Detector):
             batch = ZeroOne(batch.float())
             batched_result = self.model(batch.to(self.device))
             for res in batched_result:
-                xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
+                xyxy = res["boxes"][torch.logical_and(res["labels"] == SPORTS_BALL, res["scores"] > conf_threshold)]
+                # TODO add some sort of confidence threshold.
                 xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
                 video_detections.append(xywh.cpu().numpy())
 
