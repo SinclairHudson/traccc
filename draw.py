@@ -11,18 +11,18 @@ def draw(video, tracks, effect):
 
 if __name__ == "__main__":
     print("reading video")
-    vid = skvideo.io.vread("io/test.mp4")
+    vid = skvideo.io.vread("io/bussin.mp4", num_frames=200)
 
     print("reading yaml")
     with open("io/living_room.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
     tracks = track_dictionary["tracks"]
-    tracks = [track for track in tracks if standard_filter(track, min_age=50)]
-    draw(vid, tracks, aging_dot)
+    tracks = [track for track in tracks if standard_filter(track, min_age=2)]
+    draw(vid, tracks, temporal_dot)
 
     # write out video
     print("writing video")
-    skvideo.io.vwrite("io/outputvideo.mp4", vid)
+    skvideo.io.vwrite("io/outputtest.mp4", vid)
     # write_video("io/living_room_red_dot.mp4", vid, video_codec="h264", fps=60.0)
 

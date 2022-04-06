@@ -60,7 +60,7 @@ class RawPretrainedDetector(Detector):
 
 
     @torch.no_grad()
-    def detect_video(self, video: torch.Tensor, bbox_format="cxcywh", conf_threshold=0.5):
+    def detect_video(self, video: torch.Tensor, bbox_format="cxcywh"):
         """
         video is a sequence of frames THWC (time, height, width, channel), pytorch tensor
         output is a list of numpy arrays denoting bounding boxes for each frame
@@ -79,8 +79,10 @@ class RawPretrainedDetector(Detector):
             batched_result = self.model(batch.to(self.device))
             for res in batched_result:
                 xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
+                conf = res["scores"][res["labels"] == SPORTS_BALL]
                 xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
-                video_detections.append(xywh.cpu().numpy())
+                cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
+                video_detections.append(cxywh.cpu().numpy())
 
         if len(video) % batch_size != 0:  # there's leftover
             batch = video[num_batches * batch_size:]
@@ -88,10 +90,11 @@ class RawPretrainedDetector(Detector):
             batch = ZeroOne(batch.float())
             batched_result = self.model(batch.to(self.device))
             for res in batched_result:
-                xyxy = res["boxes"][torch.logical_and(res["labels"] == SPORTS_BALL, res["scores"] > conf_threshold)]
-                # TODO add some sort of confidence threshold.
+                xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
+                conf = res["scores"][res["labels"] == SPORTS_BALL]
                 xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
-                video_detections.append(xywh.cpu().numpy())
+                cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
+                video_detections.append(cxywh.cpu().numpy())
 
         assert len(video_detections) == len(video)
         return video_detections

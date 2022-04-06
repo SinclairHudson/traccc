@@ -7,9 +7,8 @@ import torch
 
 if __name__ == "__main__":
     print("reading video")
-    vid = skvideo.io.vread("io/living_room.mp4")
+    vid = skvideo.io.vread("io/bussin.mp4", num_frames=200)
     detector = RawPretrainedDetector(device="cuda")
-    print("showing detections")
     detector.detect(torch.Tensor(vid), filename="io/living_room.npz")
 
 
