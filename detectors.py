@@ -33,7 +33,7 @@ class Detector(ABC):
     def detect_video(self, video, bbox_format="cxcywh"):
         raise NotImplementedError
 
-    def detect(self, video, filename="io/detections.npz"):
+    def detect(self, video, filename="internal/detections.npz"):
         detections = self.detect_video(video)
         np.savez(filename, *detections)
         print(f"saved detections in {filename}")
@@ -60,20 +60,20 @@ class RawPretrainedDetector(Detector):
 
 
     @torch.no_grad()
-    def detect_video(self, video: torch.Tensor, bbox_format="cxcywh"):
+    def detect_video(self, video, bbox_format="cxcywh"):
         """
-        video is a sequence of frames THWC (time, height, width, channel), pytorch tensor
+        video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
         batch_size = 16
-        num_batches = len(video) // batch_size  # last frames may be cut
         video_detections = []  # list of list of detections
-        TPI = ToPILImage()
-        TT = ToTensor()
         ZeroOne = Normalize((0, 0, 0), (255, 255, 255))  # divide to 0 to 1
+        # num_batches = len(video) // batch_size  # last frames may be cut
+
         print("detecting balls in the video")
-        for index in tqdm(range(num_batches)):
-            batch = video[index * batch_size : (index + 1) * batch_size]
+        for frame in tqdm(video):
+
+            batch = torch.Tensor(frame).unsqueeze(0)
             batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
             batch = ZeroOne(batch.float())
             batched_result = self.model(batch.to(self.device))
@@ -84,19 +84,19 @@ class RawPretrainedDetector(Detector):
                 cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
                 video_detections.append(cxywh.cpu().numpy())
 
-        if len(video) % batch_size != 0:  # there's leftover
-            batch = video[num_batches * batch_size:]
-            batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
-            batch = ZeroOne(batch.float())
-            batched_result = self.model(batch.to(self.device))
-            for res in batched_result:
-                xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
-                conf = res["scores"][res["labels"] == SPORTS_BALL]
-                xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
-                cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
-                video_detections.append(cxywh.cpu().numpy())
+        # if len(video) % batch_size != 0:  # there's leftover
+            # batch = video[num_batches * batch_size:]
+            # batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
+            # batch = ZeroOne(batch.float())
+            # batched_result = self.model(batch.to(self.device))
+            # for res in batched_result:
+                # xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
+                # conf = res["scores"][res["labels"] == SPORTS_BALL]
+                # xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
+                # cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
+                # video_detections.append(cxywh.cpu().numpy())
 
-        assert len(video_detections) == len(video)
+        # assert len(video_detections) == len(video)
         return video_detections
 
 

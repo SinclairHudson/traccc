@@ -1,15 +1,20 @@
 import skvideo.io
+import argparse
 from detectors import RawPretrainedDetector
-from torchvision.io import read_video
+from torchvision.io import read_video, VideoReader
 import torch
 
 
 
 if __name__ == "__main__":
-    print("reading video")
-    vid = skvideo.io.vread("io/bussin.mp4", num_frames=200)
+    parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
+    parser.add_argument("name", help="name of the project to be tracked.")
+    args = parser.parse_args()
+    name = args.name
+
+    vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     detector = RawPretrainedDetector(device="cuda")
-    detector.detect(torch.Tensor(vid), filename="io/living_room.npz")
+    detector.detect(vid_generator, filename=f"internal/{name}.npz")
 
 
 

@@ -1,4 +1,5 @@
 import yaml
+import argparse
 import skvideo.io
 from torchvision.io import read_video, write_video
 from effects import *
@@ -10,11 +11,15 @@ def draw(video, tracks, effect):
         effect(video, track)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
+    parser.add_argument("name", help="name of the project to be tracked.")
+    args = parser.parse_args()
+    name = args.name
     print("reading video")
-    vid = skvideo.io.vread("io/bussin.mp4", num_frames=200)
+    vid = skvideo.io.vread(f"io/{name}.mp4", num_frames=200)
 
     print("reading yaml")
-    with open("io/living_room.yaml", 'r') as f:
+    with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
     tracks = track_dictionary["tracks"]
@@ -23,6 +28,6 @@ if __name__ == "__main__":
 
     # write out video
     print("writing video")
-    skvideo.io.vwrite("io/outputtest.mp4", vid)
+    skvideo.io.vwrite(f"io/{name}.mp4", vid)
     # write_video("io/living_room_red_dot.mp4", vid, video_codec="h264", fps=60.0)
 

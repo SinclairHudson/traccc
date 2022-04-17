@@ -10,6 +10,7 @@ from tqdm import tqdm
 import torch
 from torchvision.ops import box_convert, nms
 import yaml
+import argparse
 
 
 def euclidean_distance(track: Track, detection):
@@ -91,7 +92,13 @@ def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.8) -> None
 
 
 if __name__ == "__main__":
-    detections = np.load("io/living_room.npz")
+
+    parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
+    parser.add_argument("name", help="name of the project to be tracked.")
+    args = parser.parse_args()
+    name = args.name
+
+    detections = np.load(f"internal/{name}.npz")
     detections_list = []
     for frame_number, frame_name in tqdm(enumerate(detections)):
         detections_list.append(detections[frame_name])
@@ -101,9 +108,9 @@ if __name__ == "__main__":
 
     track_lives = [track.encode_in_dictionary() for track in tracks]
     dictionary = {
-        "detections_file": "io/living_room.npz",
+        "detections_file": f"internal/{name}.npz",
         "tracks": track_lives
     }
-    with open("io/living_room.yaml", 'w') as f:
+    with open(f"internal/{name}.yaml", 'w') as f:
         yaml.safe_dump(dictionary, f)
 
