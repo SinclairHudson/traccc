@@ -78,7 +78,7 @@ def track(detections, death_time=5):
     return inactive_tracks
 
 
-def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.8) -> None:
+def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5) -> None:
     """
     Applies confidence filtering and Non-Max Suppression
     """
@@ -87,7 +87,7 @@ def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.8) -> None
         frame_detections = torch.Tensor(frame_detections[conf > conf_threshold])
 
         xyxy = box_convert(frame_detections[:, 1:], in_fmt="cxcywh", out_fmt="xyxy")
-        best_candidates = nms(xyxy, frame_detections[:,0], iou_threshold=0.5)
+        best_candidates = nms(xyxy, frame_detections[:,0], iou_threshold=iou_threshold)
         detections[frame_number] = frame_detections[best_candidates, 1:].numpy()
 
 
@@ -95,6 +95,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
     parser.add_argument("name", help="name of the project to be tracked.")
+    parser.add_argument("--death_time", help="number of frames without an observation before track deletion", default=5)
+    parser.add_argument("--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.5)
+    parser.add_argument("--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
     args = parser.parse_args()
     name = args.name
 
@@ -103,8 +106,8 @@ if __name__ == "__main__":
     for frame_number, frame_name in tqdm(enumerate(detections)):
         detections_list.append(detections[frame_name])
 
-    filter_detections(detections_list)
-    tracks = track(detections_list)
+    filter_detections(detections_list, float(args.conf_threshold), float(args.iou_threshold))
+    tracks = track(detections_list, death_time=int(args.death_time))
 
     track_lives = [track.encode_in_dictionary() for track in tracks]
     dictionary = {

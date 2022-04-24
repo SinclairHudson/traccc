@@ -9,6 +9,7 @@ from tqdm import tqdm
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
     parser.add_argument("name", help="name of the project to be tracked.")
+    parser.add_argument("--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
     args = parser.parse_args()
     name = args.name
     print("reading video")
@@ -23,6 +24,8 @@ if __name__ == "__main__":
     for i, frame in enumerate(vid_generator):
         if len(detections_list[i]) > 0:
             CHW = torch.permute(torch.tensor(frame, dtype=torch.uint8), (2, 0, 1))  # move channels to front
+            confs = detections_list[i][:, 0]
+            detections_list[i] = detections_list[i][confs > float(args.conf_threshold)]
             boxes_xyxy = box_convert(torch.Tensor(detections_list[i][:, 1:]), in_fmt="cxcywh", out_fmt="xyxy")
             drawn = draw_bounding_boxes(CHW, boxes_xyxy, colors="red", width=5)
             vid_writer.writeFrame(torch.permute(drawn, (1, 2, 0)).numpy())

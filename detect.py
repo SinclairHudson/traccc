@@ -1,6 +1,6 @@
 import skvideo.io
 import argparse
-from detectors import RawPretrainedDetector
+from detectors import RawPretrainedDetector, HuggingFaceDETR
 from torchvision.io import read_video, VideoReader
 import torch
 
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     name = args.name
 
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
-    detector = RawPretrainedDetector(device="cuda")
+    detector = HuggingFaceDETR(device="cuda")
     detector.detect(vid_generator, filename=f"internal/{name}.npz")
 
 

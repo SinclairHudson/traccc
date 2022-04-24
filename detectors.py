@@ -7,6 +7,8 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from torchvision.transforms import ToPILImage, ToTensor, Normalize
+from transformers import DetrFeatureExtractor, DetrForObjectDetection
+
 
 
 SPORTS_BALL = 37  # from coco class mapping
@@ -83,22 +85,51 @@ class RawPretrainedDetector(Detector):
                 xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
                 cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
                 video_detections.append(cxywh.cpu().numpy())
-
-        # if len(video) % batch_size != 0:  # there's leftover
-            # batch = video[num_batches * batch_size:]
-            # batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
-            # batch = ZeroOne(batch.float())
-            # batched_result = self.model(batch.to(self.device))
-            # for res in batched_result:
-                # xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
-                # conf = res["scores"][res["labels"] == SPORTS_BALL]
-                # xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
-                # cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
-                # video_detections.append(cxywh.cpu().numpy())
-
-        # assert len(video_detections) == len(video)
         return video_detections
 
+class HuggingFaceDETR(Detector):
+    def __init__(self, device='cpu'):
+        self.feature_extractor = DetrFeatureExtractor.from_pretrained('facebook/detr-resnet-101-dc5')
+        self.model = DetrForObjectDetection.from_pretrained('facebook/detr-resnet-101-dc5')
+
+        self.device = torch.device(device)
+        self.model.eval().to(self.device)
+
+
+    @torch.no_grad()
+    def detect_video(self, video, bbox_format="cxcywh"):
+        """
+        video is a generator
+        output is a list of numpy arrays denoting bounding boxes for each frame
+        """
+        batch_size = 16
+        video_detections = []  # list of list of detections
+        ZeroOne = Normalize((0, 0, 0), (255, 255, 255))  # divide to 0 to 1
+        # num_batches = len(video) // batch_size  # last frames may be cut
+
+        print("detecting balls in the video")
+        for frame in tqdm(video):
+
+            width, height, c = frame.shape
+            inputs = self.feature_extractor(images=frame, return_tensors="pt")
+            inputs["pixel_values"] = inputs["pixel_values"].to(self.device)
+            inputs["pixel_mask"] = inputs["pixel_mask"].to(self.device)
+
+            torch.max
+            outputs = self.model(**inputs)
+            outputs["logits"] = outputs["logits"].squeeze(0)  # remove singleton batch dim
+            outputs["pred_boxes"] = outputs["pred_boxes"].squeeze(0)
+            confs = torch.nn.functional.softmax(outputs["logits"], dim=1)
+            conf_scores, indices = torch.max(confs, dim=1)
+            xywh = outputs["pred_boxes"][indices == SPORTS_BALL]
+            conf_scores = conf_scores[indices == SPORTS_BALL]
+            xywh[:, 0] *= height
+            xywh[:, 2] *= height
+            xywh[:, 1] *= width
+            xywh[:, 3] *= width
+            cxywh = torch.cat((conf_scores.unsqueeze(1), xywh), dim=1)  # add confidences
+            video_detections.append(cxywh.cpu().numpy())
+        return video_detections
 
 
 

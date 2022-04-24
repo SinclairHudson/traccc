@@ -16,7 +16,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     name = args.name
     print("reading video")
-    vid = skvideo.io.vread(f"io/{name}.mp4", num_frames=200)
+    vid = skvideo.io.vread(f"io/{name}.mp4", num_frames=100)
 
     print("reading yaml")
     with open(f"internal/{name}.yaml", 'r') as f:
@@ -24,10 +24,9 @@ if __name__ == "__main__":
 
     tracks = track_dictionary["tracks"]
     tracks = [track for track in tracks if standard_filter(track, min_age=2)]
-    draw(vid, tracks, temporal_dot)
+    draw(vid, tracks, temporal_line)
 
     # write out video
     print("writing video")
-    skvideo.io.vwrite(f"io/{name}.mp4", vid)
-    # write_video("io/living_room_red_dot.mp4", vid, video_codec="h264", fps=60.0)
+    skvideo.io.vwrite(f"io/{name}_out.mp4", vid)
 
