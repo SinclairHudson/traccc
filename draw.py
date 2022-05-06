@@ -15,20 +15,26 @@ if __name__ == "__main__":
     parser.add_argument("name", help="name of the project to be tracked.")
     args = parser.parse_args()
     name = args.name
-    print("reading video")
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
-    vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_detections.mp4")
-    vid = skvideo.io.vread(f"io/{name}.mp4", num_frames=100)
+    vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_out.mp4")
 
     print("reading yaml")
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
+    effect = RedDot()
     tracks = track_dictionary["tracks"]
     tracks = [track for track in tracks if standard_filter(track, min_age=2)]
-    draw(vid, tracks, temporal_line)
 
-    # write out video
-    print("writing video")
-    skvideo.io.vwrite(f"io/{name}_out.mp4", vid)
+    for i, frame in tqdm(enumerate(vid_generator)):
+        relevant_tracks = [track for track in tracks if effect.relevant(track, i)]
+        out_frame = frame
+
+        # loop through all tracks, draw each on the frame
+        for track in relevant_tracks:
+            out_frame = effect.draw(out_frame, track, i)
+
+        vid_writer.writeFrame(out_frame)
+
+    vid_writer.close()
 

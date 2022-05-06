@@ -1,16 +1,28 @@
+from abc import ABC
 import cv2
 
-def red_dot(video, track):
-    """
+class Effect(ABC):
+    def __init__(self):
+        pass
 
-    """
-    for i in range(track["age"]):
-        position = track["states"][i][:2]  # xy
+    def relevant(self, track, frame_number):
+        if track["start_frame"]<= frame_number and frame_number <= track["start_frame"]:
+            return True
+        else:
+            return False
 
-        frame = video[i+track["start_frame"]]
-        video[i+track["start_frame"]] = cv2.circle(frame, (int(position[0]), int(position[1])), radius=20,
-                                                   color=(255, 0, 0), thickness=-1)
+    def draw(self, frame, track, frame_number):
+        raise NotImplementedError
 
+
+
+class RedDot(Effect):
+    def draw(self, frame, track, frame_number):
+        i = frame_number - track["start_frame"]
+        position = track["states"][i][:2]
+
+        return cv2.circle(frame, (int(position[0]), int(position[1])), radius=20,
+                                color=(255, 0, 0), thickness=-1)
 
 def aging_dot(video, track):
     """
