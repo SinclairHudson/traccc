@@ -16,6 +16,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     name = args.name
     print("reading video")
+    vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
+    vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_detections.mp4")
     vid = skvideo.io.vread(f"io/{name}.mp4", num_frames=100)
 
     print("reading yaml")
