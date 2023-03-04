@@ -18,7 +18,6 @@ First, build the docker image (will take some time at the start)
 docker build -t ball-tracking .
 ```
 
-
 Next, spin up the docker container, and point it to the COCO dataset
 
 ```

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     for frame_number, frame_name in tqdm(enumerate(detections)):
         detections_list.append(detections[frame_name])
 
-    for i, frame in enumerate(vid_generator):
+    for i, frame in tqdm(enumerate(vid_generator)):
         if len(detections_list[i]) > 0:
             CHW = torch.permute(torch.tensor(frame, dtype=torch.uint8), (2, 0, 1))  # move channels to front
             confs = detections_list[i][:, 0]
@@ -37,3 +37,4 @@ if __name__ == "__main__":
             vid_writer.writeFrame(frame)
 
     vid_writer.close()
+    print(f"finished writing io/{name}_detections.mp4")

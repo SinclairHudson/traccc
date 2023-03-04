@@ -11,10 +11,12 @@ def draw(video, tracks, effect):
         effect(video, track)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
-    parser.add_argument("name", help="name of the project to be tracked.")
+    parser = argparse.ArgumentParser(description="Draws effects on the video, based on the tracks")
+    parser.add_argument("name", help="name of the project")
+    parser.add_argument("--effect", help="name of effect you wish to use", default="red_dot")
     args = parser.parse_args()
     name = args.name
+    effect = args.effect
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_out.mp4")
 
@@ -22,7 +24,10 @@ if __name__ == "__main__":
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
-    effect = RedDot()
+    effect = {
+        "red_dot": RedDot()
+        # add more here
+    }[effect]
     tracks = track_dictionary["tracks"]
     tracks = [track for track in tracks if standard_filter(track, min_age=2)]
 
@@ -37,4 +42,5 @@ if __name__ == "__main__":
         vid_writer.writeFrame(out_frame)
 
     vid_writer.close()
+    print(f"successfully wrote video io/{name}_out.mp4")
 
