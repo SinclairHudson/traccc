@@ -5,3 +5,4 @@ RUN apt-get update
 RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 RUN pip install filterpy transformers timm sk-video opencv-python pylint
+RUN pip install pytest
