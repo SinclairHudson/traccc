@@ -1,8 +1,6 @@
 from trackers import Track
 
-
-
-def standard_filter(track, min_age=30) -> bool:
+def standard_filter(track: dict, min_age: int=30) -> bool:
     """
     A filter for determining if the track produced by the tracker is good for
     visualization.

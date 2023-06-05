@@ -19,7 +19,7 @@ if __name__ == "__main__":
     }
 
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
-    detector = model_selector[args.model](device="cuda")
+    detector = model_selector[args.model]()
     detector.detect(vid_generator, filename=f"internal/{name}.npz")
 
 

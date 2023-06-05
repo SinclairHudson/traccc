@@ -15,22 +15,28 @@ if __name__ == "__main__":
     print("reading video")
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_detections.mp4")
+    metadata = skvideo.io.ffprobe(f"io/{name}.mp4")
+    frame_count = int(metadata['video']['@nb_frames'])
 
     detections = np.load(f"internal/{name}.npz")
     detections_list = []
-    for frame_number, frame_name in tqdm(enumerate(detections)):
+    for frame_number, frame_name in enumerate(detections):
         detections_list.append(detections[frame_name])
 
-    for i, frame in tqdm(enumerate(vid_generator)):
+    print("drawing detections")
+    for i, frame in tqdm(enumerate(vid_generator), total=frame_count):
         if len(detections_list[i]) > 0:
             CHW = torch.permute(torch.tensor(frame, dtype=torch.uint8), (2, 0, 1))  # move channels to front
             confs = detections_list[i][:, 0]
             detections_list[i] = detections_list[i][confs > float(args.conf_threshold)]
             boxes_xyxy = box_convert(torch.Tensor(detections_list[i][:, 1:]), in_fmt="cxcywh", out_fmt="xyxy")
             drawn = CHW
+            print("drawing", len(boxes_xyxy))
+            if len(boxes_xyxy) < 5:
+                exit()
             for i, box in enumerate(boxes_xyxy):
                 conf = confs[i]
-                drawn = draw_bounding_boxes(CHW, box.unsqueeze(0), colors=(int(conf * 255), 255, 255), width=5)
+                drawn = draw_bounding_boxes(CHW, box.unsqueeze(0), colors=(int(conf * 255), int(conf * 255), 255), width=5)
 
             vid_writer.writeFrame(torch.permute(drawn, (1, 2, 0)).numpy())
         else:

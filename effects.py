@@ -5,8 +5,11 @@ class Effect(ABC):
     def __init__(self):
         pass
 
-    def relevant(self, track, frame_number):
-        if track["start_frame"]<= frame_number and frame_number <= track["start_frame"]:
+    def relevant(self, track: dict, frame_number) -> bool:
+        """
+        returns True if the frame needs to be modified because of this effect
+        """
+        if track["start_frame"] <= frame_number and frame_number <= track["start_frame"]:
             return True
         else:
             return False
@@ -15,13 +18,11 @@ class Effect(ABC):
         raise NotImplementedError
 
 
-
 class RedDot(Effect):
     def draw(self, frame, track, frame_number):
         i = frame_number - track["start_frame"]
-        position = track["states"][i][:2]
-
-        return cv2.circle(frame, (int(position[0]), int(position[1])), radius=20,
+        (x, y) = track["states"][i][:2]
+        return cv2.circle(frame, (int(x), int(y)), radius=20,
                                 color=(255, 0, 0), thickness=-1)
 
 def aging_dot(video, track):
