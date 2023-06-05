@@ -7,17 +7,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: activate Docker
+    - name: start Docker
       run: |
         docker build -t ball-tracking .
-        bash start.sh
-    - name: Analysing the code with pylint
+    - name: wait for docker to finish building
+      run: sleep 30
+    - name: Analysing the code with pylint inside docker
       run: |
-        pylint $(git ls-files '*.py')
+        docker exec -it pylint $(git ls-files '*.py')
