@@ -21,4 +21,4 @@ jobs:
       run: sleep 30
     - name: Analysing the code with pylint inside docker
       run: |
-        docker exec -it pylint $(git ls-files '*.py')
+        docker exec -it ball-tracking pylint $(git ls-files '*.py')
