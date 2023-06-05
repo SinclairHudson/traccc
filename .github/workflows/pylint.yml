@@ -14,10 +14,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: activate Docker
       run: |
-        python -m pip install --upgrade pip
-        pip install pylint
+        docker build -t ball-tracking .
+        bash start.sh
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
