@@ -5,7 +5,7 @@ from filterpy.kalman import KalmanFilter
 import numpy as np
 from math import sqrt
 from scipy.optimize import linear_sum_assignment
-from trackers import Track
+from balltracking.trackers import Track
 from tqdm import tqdm
 import torch
 from torchvision.ops import box_convert, nms
@@ -14,15 +14,18 @@ import argparse
 
 
 def euclidean_distance(track: Track, detection):
-    assert len(detection) == 5
+    assert len(detection) == 5 # confidence, x, y, w, h
+    assert len(track.kf.x) == 4  # x, y, vx, vy
     return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
 
-def hungarian_matching(tracks, detections, cost_function=euclidean_distance):
+def hungarian_matching(tracks, detections, cost_function=euclidean_distance, max_cost=np.infty):
     """
     Finds the minimum cost matching between tracks and detections, based on
     some distance metric. Returns a permutation of detections that orders them
     to be in the correct order with tracks.
     If there are more detections that tracks, the detections permuted to the end
+    returns the scalar of the cost of all the matches, as well as two arrays of equal
+    length. row_ind[x] is the track that matches with col_ind[x] detection.
     """
     cost_matrix = np.zeros((len(tracks), len(detections)))
     for i, track in enumerate(tracks):
@@ -30,6 +33,12 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance):
             cost_matrix[i][j] = cost_function(track, detection)
 
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
+
+    # remove ridiculous matches; it's better to leave them unpaired
+    for i, j in zip(row_ind, col_ind):
+        if cost_matrix[i, j] > max_cost:
+            row_ind = np.delete(row_ind, np.where(row_ind == i))
+            col_ind = np.delete(col_ind, np.where(col_ind == j))
     cost = cost_matrix[row_ind, col_ind].sum()
     return cost, row_ind, col_ind
 
