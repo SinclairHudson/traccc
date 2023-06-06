@@ -1,4 +1,4 @@
-import skvideo.io
+import skvideo
 import argparse
 from detectors import RawPretrainedDetector, HuggingFaceDETR
 from torchvision.io import read_video, VideoReader

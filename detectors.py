@@ -52,7 +52,7 @@ class Detector(ABC):
         write_video(outfile, video, video_codec="h264", fps=60.0)
 
 
-class RawPretrainedDetector(Detector):
+class PretrainedRN50Detector(Detector):
     def __init__(self):
         self.model = fasterrcnn_resnet50_fpn(pretrained=True, num_classes=91,
                                         pretrained_backbone=True)
@@ -79,7 +79,6 @@ class RawPretrainedDetector(Detector):
             batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
             batch = ZeroOne(batch.float())
             batched_result = self.model(batch.to(self.device))
-            breakpoint()
             for res in batched_result:
                 xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
                 conf = res["scores"][res["labels"] == SPORTS_BALL]
@@ -122,10 +121,6 @@ class HuggingFaceDETR(Detector):
             conf_scores, indices = torch.max(confs, dim=1)
             xywh = outputs["pred_boxes"][indices == SPORTS_BALL]
             conf_scores = conf_scores[indices == SPORTS_BALL]
-            print(xywh.shape)
-            print(conf_scores.shape)
-            print("---")
-            # breakpoint()
 
             xywh[:, 0] *= height
             xywh[:, 2] *= height
