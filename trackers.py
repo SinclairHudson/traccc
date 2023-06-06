@@ -28,7 +28,7 @@ class Track:
                               [0, 1, 0, 0]])
         self.kf.P *= 1000
 
-        self.age = 0
+        self.age = 0 # in the first frame, age is 0
         self.time_missing = 0
         self.active=True
 

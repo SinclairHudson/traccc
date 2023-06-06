@@ -1,4 +1,4 @@
-from balltracking.track import hungarian_matching
+from balltracking.track import hungarian_matching, track
 from balltracking.trackers import Track
 import numpy as np
 from math import sqrt
@@ -63,3 +63,39 @@ def test_more_tracks_than_detections():
     assert np.all(row_ind == np.array([1, 4]))
     assert np.all(col_ind == np.array([0, 1]))
     assert cost == sqrt(2) + sqrt(2)
+
+def test_track():
+    """
+    Simple test case to test that the tracker can take these detections and string
+    them together.
+    """
+    detections = [np.array([[0.92, 0, 0, 5, 5]]),
+                  np.array([[0.99, 20, 20, 5, 5]]),
+                  np.array([[0.90, 41, 38, 5, 5]]),
+                  np.array([[0.94, 58, 64, 5, 5]])]
+
+    tracks = track(detections)
+    assert len(tracks) == 1
+    assert tracks[0].age == 3
+
+def test_no_track_switch():
+    """
+    Simple test case to ensure the tracker doesn't switch tracks when it shouldn't.
+    """
+    detections = [np.array([[0.92, 0, 0, 5, 5], [0.92, 100, 0, 3, 3]]),
+                  np.array([[0.99, 20, 20, 5, 5], [0.99, 80, 20, 3, 3]]),
+                  np.array([[0.99, 40, 40, 5, 5], [0.99, 60, 40, 3, 3]]),
+                  np.array([[0.99, 60, 60, 5, 5], [0.99, 40, 60, 3, 3]]),
+                  np.array([[0.99, 80, 80, 5, 5], [0.99, 20, 80, 3, 3]]),
+                  np.array([[0.99, 100, 100, 5, 5], [0.99, 0, 100, 3, 3]])]
+
+    tracks = track(detections)
+    assert len(tracks) == 2  # there should only be two tracks
+
+    # and there should be a track that connects (0, 0) to (100, 100)
+    # or connects (100, 0) to (0, 100)
+    if np.all(tracks[0].prev_states[0] == np.array([0.92, 0, 0, 0, 0])):
+        assert np.all(tracks[0].prev_states[-1] == np.array([0.99, 100, 100, 5, 5]))
+    elif np.all(tracks[0].prev_states[0] == np.array([0.92, 100, 0, 0, 0])):
+        assert np.all(tracks[0].prev_states[-1] == np.array([0.99, 0, 100, 5, 5]))
+
