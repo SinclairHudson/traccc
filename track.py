@@ -14,7 +14,8 @@ import argparse
 
 
 def euclidean_distance(track: Track, detection):
-    return sqrt((track.kf.x[0] - detection[0]) ** 2 + (track.kf.x[1] - detection[1]) ** 2)
+    assert len(detection) == 5
+    return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
 
 def hungarian_matching(tracks, detections, cost_function=euclidean_distance):
     """
@@ -29,10 +30,11 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance):
             cost_matrix[i][j] = cost_function(track, detection)
 
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
-    return row_ind, col_ind
+    cost = cost_matrix[row_ind, col_ind].sum()
+    return cost, row_ind, col_ind
 
 
-def track(detections, death_time=5):
+def track(detections, death_time:int=5):
     """
     detections is a list of detections, every entry is a frame
     """
@@ -62,10 +64,11 @@ def track(detections, death_time=5):
 
         else:  # there are some detections
             if len(tracks) > 0:
-                row_ind, col_ind = hungarian_matching(tracks, frame_detections)
+                cost, row_ind, col_ind = hungarian_matching(tracks, frame_detections)
+                print(f"cost: {cost}")
                 for i in range(len(row_ind)):
                     # update the matched tracks
-                    tracks[row_ind[i]].update(frame_detections[col_ind[i]][:2])  # update using xy
+                    tracks[row_ind[i]].update(frame_detections[col_ind[i]])
 
                 unmatched_track_indices = set(range(len(tracks))) - set(row_ind)
                 for i in unmatched_track_indices:
@@ -87,7 +90,6 @@ def track(detections, death_time=5):
                     next_track_id += 1
 
     inactive_tracks.extend(tracks)
-    breakpoint()
     return inactive_tracks
 
 

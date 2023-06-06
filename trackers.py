@@ -1,7 +1,7 @@
 from filterpy.kalman import KalmanFilter
 import numpy as np
 
-DIM_X = 5  # position_x, position_y, velocity_x, velocity_y, acceleration_y
+DIM_X = 4  # position_x, position_y, velocity_x, velocity_y
 DIM_Z = 2  # position, (x, y) in image coordinates (top left is origin)
 
 class Track:
@@ -14,16 +14,18 @@ class Track:
         self.start_frame = start_frame
         self.death_time = death_time
 
+        assert len(initial_pos) == 5  # xywh
         self.kf = KalmanFilter(dim_x=DIM_X, dim_z=DIM_Z)
-        self.kf.x = np.array([initial_pos[0], initial_pos[1], 0, 0, 1])
-        self.kf.F = np.array([[1, 0, 1, 0, 0],  # x = x + vx
-                              [0, 1, 0, 1, 0],  # y = y + vy
-                              [0, 0, 1, 0, 0],  # vx = vx
-                              [0, 0, 0, 1, 1],  # vy = vy + ay
-                              [0, 0, 0, 0, 1]])  # ay = ay
+        # initial pos is xywh
+        # state (x vector) is [x, y, vx, vy]
+        self.kf.x = np.array([initial_pos[1], initial_pos[2], 0, 0])
+        self.kf.F = np.array([[1, 0, 1, 0],  # x = x + vx
+                              [0, 1, 0, 1],  # y = y + vy
+                              [0, 0, 1, 0],  # vx = vx
+                              [0, 0, 0, 1]])  # vy = vy + ay
 
-        self.kf.H = np.array([[1, 0, 0, 0, 0],  # we only measure position
-                              [0, 1, 0, 0, 0]])
+        self.kf.H = np.array([[1, 0, 0, 0],  # we only measure position
+                              [0, 1, 0, 0]])
         self.kf.P *= 1000
 
         self.age = 0
@@ -47,7 +49,10 @@ class Track:
             if self.time_missing > self.death_time:
                 self.active = False
         else:
-            self.kf.update(measurement)
+            # measurement comes in as cxywh
+            assert len(measurement) == 5
+            measurement_xy = measurement[1:3]
+            self.kf.update(measurement_xy)
 
     def encode_in_dictionary(self):
         # need to convert to vanilla python data types and dictionary for saving

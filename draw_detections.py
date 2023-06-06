@@ -31,9 +31,6 @@ if __name__ == "__main__":
             detections_list[i] = detections_list[i][confs > float(args.conf_threshold)]
             boxes_xyxy = box_convert(torch.Tensor(detections_list[i][:, 1:]), in_fmt="cxcywh", out_fmt="xyxy")
             drawn = CHW
-            print("drawing", len(boxes_xyxy))
-            if len(boxes_xyxy) < 5:
-                exit()
             for i, box in enumerate(boxes_xyxy):
                 conf = confs[i]
                 drawn = draw_bounding_boxes(CHW, box.unsqueeze(0), colors=(int(conf * 255), int(conf * 255), 255), width=5)

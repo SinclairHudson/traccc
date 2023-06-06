@@ -1,6 +1,6 @@
-import skvideo
+import skvideo.io
 import argparse
-from detectors import RawPretrainedDetector, HuggingFaceDETR
+from detectors import PretrainedRN50Detector, HuggingFaceDETR
 from torchvision.io import read_video, VideoReader
 import torch
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     model_selector = {
         "DETR": HuggingFaceDETR,
-        "Pretrained": RawPretrainedDetector
+        "Pretrained": PretrainedRN50Detector
     }
 
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")

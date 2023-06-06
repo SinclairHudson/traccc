@@ -9,7 +9,7 @@ class Effect(ABC):
         """
         returns True if the frame needs to be modified because of this effect
         """
-        if track["start_frame"] <= frame_number and frame_number <= track["start_frame"]:
+        if track["start_frame"] <= frame_number and frame_number < track["start_frame"] + track["age"]:
             return True
         else:
             return False

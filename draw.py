@@ -36,13 +36,13 @@ if __name__ == "__main__":
     # filter out all the tracks that we deem not good enough
     tracks = [track for track in tracks if standard_filter(track, min_age=int(args.min_age))]
 
-    breakpoint()
     for i, frame in tqdm(enumerate(vid_generator), total=frame_count):
         relevant_tracks = [track for track in tracks if effect.relevant(track, i)]
         out_frame = frame
 
         # loop through all tracks, draw each on the frame
         for track in relevant_tracks:
+            print("drawing")
             out_frame = effect.draw(out_frame, track, i)
 
         vid_writer.writeFrame(out_frame)
