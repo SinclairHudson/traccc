@@ -1,5 +1,6 @@
 from abc import ABC
 import cv2
+import numpy as np
 
 class Effect(ABC):
     def __init__(self):
@@ -24,6 +25,30 @@ class RedDot(Effect):
         (x, y) = track["states"][i][:2]
         return cv2.circle(frame, (int(x), int(y)), radius=20,
                                 color=(255, 0, 0), thickness=-1)
+
+class LaggingBlueDot(Effect):
+    def __init__(self, time_lag:int=8):
+        self.time_lag = time_lag
+
+    def relevant(self, track: dict, frame_number) -> bool:
+        """
+        returns True if the frame needs to be modified because of this effect
+        """
+        if track["age"] >= self.time_lag and \
+            track["start_frame"] <= frame_number + self.time_lag and \
+            frame_number < track["start_frame"] + track["age"] + self.time_lag:
+            return True
+        else:
+            return False
+
+    def draw(self, frame: np.ndarray, track: dict, frame_number) -> np.ndarray:
+        i = frame_number - track["start_frame"] - self.time_lag
+        if i >= 0:
+            (x, y) = track["states"][i][:2]
+        else:
+            (x, y) = track["states"][0][:2]  # for times where the track is too young
+        return cv2.circle(frame, (int(x), int(y)), radius=20,
+                                color=(0, 0, 255), thickness=-1)
 
 def aging_dot(video, track):
     """

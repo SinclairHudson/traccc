@@ -1,5 +1,5 @@
-from balltracking.track import hungarian_matching, track
-from balltracking.trackers import Track
+from track import hungarian_matching, track
+from trackers import Track
 import numpy as np
 from math import sqrt
 

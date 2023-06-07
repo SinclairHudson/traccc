@@ -1,4 +1,4 @@
-from balltracking.detectors import HuggingFaceDETR, PretrainedRN50Detector
+from detectors import HuggingFaceDETR, PretrainedRN50Detector
 import skvideo.io
 import pytest
 

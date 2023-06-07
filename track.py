@@ -5,7 +5,7 @@ from filterpy.kalman import KalmanFilter
 import numpy as np
 from math import sqrt
 from scipy.optimize import linear_sum_assignment
-from balltracking.trackers import Track
+from trackers import Track
 from tqdm import tqdm
 import torch
 from torchvision.ops import box_convert, nms
