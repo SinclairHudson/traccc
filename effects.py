@@ -41,7 +41,7 @@ class LaggingBlueDot(Effect):
         else:
             return False
 
-    def draw(self, frame: np.ndarray, track: dict, frame_number) -> np.ndarray:
+    def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
         i = frame_number - track["start_frame"] - self.time_lag
         if i >= 0:
             (x, y) = track["states"][i][:2]
@@ -49,6 +49,22 @@ class LaggingBlueDot(Effect):
             (x, y) = track["states"][0][:2]  # for times where the track is too young
         return cv2.circle(frame, (int(x), int(y)), radius=20,
                                 color=(0, 0, 255), thickness=-1)
+
+class Line(Effect):
+    def __init__(self, length_in_frames:int=15):
+        self.length_in_frames = length_in_frames
+
+    def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
+        start_line = max(0, frame_number - self.length_in_frames - track["start_frame"])
+        end_line = frame_number - track["start_frame"]
+
+        for i in range(start_line, end_line):
+            (x, y) = track["states"][i][:2]
+            (x2, y2) = track["states"][i+1][:2]
+            frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
+                                color=(0, 0, 255), thickness=5)
+        return frame
+
 
 def aging_dot(video, track):
     """

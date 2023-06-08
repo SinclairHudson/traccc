@@ -11,6 +11,7 @@ import torch
 from torchvision.ops import box_convert, nms
 import yaml
 import argparse
+from typing import List
 
 
 def euclidean_distance(track: Track, detection):
@@ -47,7 +48,6 @@ def track(detections, death_time:int=5):
     """
     detections is a list of detections, every entry is a frame
     """
-    # TODO big bug here, tracks are being duplicated?
     next_track_id = 0  # counter for track IDs
     inactive_tracks = []
     tracks = []
@@ -58,12 +58,12 @@ def track(detections, death_time:int=5):
         active_tracks = [track for track in tracks if track.active]
         inactive_tracks.extend(dead_tracks)
 
-        for dead in dead_tracks:
-            print(f"killed track {dead.id} tracks on frame {frame_number}")
+        # for dead in dead_tracks:
+            # print(f"killed track {dead.id} tracks on frame {frame_number}")
 
         tracks = active_tracks
-        print(f"active tracks: {len(active_tracks)}")
-        print(f"detections: {len(frame_detections)}")
+        # print(f"active tracks: {len(active_tracks)}")
+        # print(f"detections: {len(frame_detections)}")
         for track in tracks:
             track.predict()  # advance the Kalman Filter, to get the prior for this timestep
 
@@ -102,7 +102,7 @@ def track(detections, death_time:int=5):
     return inactive_tracks
 
 
-def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5):
+def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5) -> List[np.ndarray]:
     """
     Applies confidence filtering and Non-Max Suppression
     """
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
     parser.add_argument("name", help="name of the project to be tracked.")
     parser.add_argument("--death_time", help="number of frames without an observation before track deletion", default=5)
-    parser.add_argument("--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.5)
+    parser.add_argument("--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.2)
     parser.add_argument("--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
     args = parser.parse_args()
     name = args.name

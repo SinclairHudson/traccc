@@ -29,6 +29,7 @@ if __name__ == "__main__":
     effect = {
         "red_dot": RedDot(),
         "lagging_blue_dot": LaggingBlueDot(),
+        "line": Line(),
     }[effect]
     tracks = track_dictionary["tracks"]
 
