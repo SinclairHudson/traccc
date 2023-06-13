@@ -13,9 +13,15 @@ if __name__ == "__main__":
     parser.add_argument("name", help="name of the project")
     parser.add_argument("--effect", help="name of effect you wish to use", default="red_dot")
     parser.add_argument("--min_age", help="tracks below this age don't get drawn", default=0)
+    parser.add_argument("--colour", help="colour of the effect", default="red")
+    parser.add_argument("--length", help="length of the effect in frames", default=10)
+    parser.add_argument("--size", help="size or width of the effect", default=10)
     args = parser.parse_args()
     name = args.name
     effect = args.effect
+    colour = args.colour
+    length = int(args.length)
+    size = int(args.size)
     # vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_out.mp4")
@@ -32,11 +38,22 @@ if __name__ == "__main__":
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
+    colour = {
+        "red": (255, 0, 0),
+        "blue": (0, 0, 255),
+        "green": (0, 255, 0),
+        "white": (255, 255, 255),
+        "black": (0, 0, 0),
+    }[colour]
+
     effect = {
-        "red_dot": RedDot(),
-        "lagging_blue_dot": LaggingBlueDot(),
-        "line": Line(),
+        "dot": Dot(colour, size),
+        "lagging_blue_dot": LaggingDot(colour, length, size),
+        "line": Line(colour, length, size),
+        "highlight_line": HighlightLine(colour, length, size),
+        "contrail": Contrail(colour, length, size),
     }[effect]
+
     tracks = track_dictionary["tracks"]
 
     # filter out all the tracks that we deem not good enough
