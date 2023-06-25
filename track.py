@@ -1,23 +1,26 @@
 """
 track.py. The purpose of this file is to generate tracks from a list of detections
 """
-from filterpy.kalman import KalmanFilter
-import numpy as np
-from math import sqrt
-from scipy.optimize import linear_sum_assignment
-from trackers import Track
-from tqdm import tqdm
-import torch
-from torchvision.ops import box_convert, nms
-import yaml
 import argparse
+from math import sqrt
 from typing import List
+
+import numpy as np
+import torch
+import yaml
+from filterpy.kalman import KalmanFilter
+from scipy.optimize import linear_sum_assignment
+from torchvision.ops import box_convert, nms
+from tqdm import tqdm
+
+from trackers import Track
 
 
 def euclidean_distance(track: Track, detection):
-    assert len(detection) == 5 # confidence, x, y, w, h
+    assert len(detection) == 5  # confidence, x, y, w, h
     assert len(track.kf.x) == 4  # x, y, vx, vy
     return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
+
 
 def hungarian_matching(tracks, detections, cost_function=euclidean_distance, max_cost=np.infty):
     """
@@ -44,7 +47,7 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance, max
     return cost, row_ind, col_ind
 
 
-def track(detections, death_time:int=5):
+def track(detections, death_time: int = 5):
     """
     detections is a list of detections, every entry is a frame
     """
@@ -59,7 +62,7 @@ def track(detections, death_time:int=5):
         inactive_tracks.extend(dead_tracks)
 
         # for dead in dead_tracks:
-            # print(f"killed track {dead.id} tracks on frame {frame_number}")
+        # print(f"killed track {dead.id} tracks on frame {frame_number}")
 
         tracks = active_tracks
         # print(f"active tracks: {len(active_tracks)}")
@@ -73,29 +76,37 @@ def track(detections, death_time:int=5):
 
         else:  # there are some detections
             if len(tracks) > 0:
-                cost, row_ind, col_ind = hungarian_matching(tracks, frame_detections)
+                cost, row_ind, col_ind = hungarian_matching(
+                    tracks, frame_detections)
                 print(f"cost: {cost}")
                 for i in range(len(row_ind)):
                     # update the matched tracks
                     tracks[row_ind[i]].update(frame_detections[col_ind[i]])
 
-                unmatched_track_indices = set(range(len(tracks))) - set(row_ind)
+                unmatched_track_indices = set(
+                    range(len(tracks))) - set(row_ind)
                 for i in unmatched_track_indices:
-                    print(f"track {tracks[i].id} unmatched on frame {frame_number}")
+                    print(
+                        f"track {tracks[i].id} unmatched on frame {frame_number}")
                     tracks[i].update(None)
 
                 # births
-                unmatched_detection_indices = set(range(len(frame_detections))) - set(col_ind)
+                unmatched_detection_indices = set(
+                    range(len(frame_detections))) - set(col_ind)
                 for i in unmatched_detection_indices:
-                    print(f"birthed track {next_track_id} on frame {frame_number}")
-                    tracks.append(Track(next_track_id, frame_detections[i], frame_number, death_time=death_time))
+                    print(
+                        f"birthed track {next_track_id} on frame {frame_number}")
+                    tracks.append(
+                        Track(next_track_id, frame_detections[i], frame_number, death_time=death_time))
                     next_track_id += 1
 
             else:  # no tracks, but detections
                 # births
                 for detection in frame_detections:
-                    print(f"birthed track {next_track_id} on frame {frame_number}")
-                    tracks.append(Track(next_track_id, detection, frame_number, death_time=death_time))
+                    print(
+                        f"birthed track {next_track_id} on frame {frame_number}")
+                    tracks.append(Track(next_track_id, detection,
+                                  frame_number, death_time=death_time))
                     next_track_id += 1
 
     inactive_tracks.extend(tracks)
@@ -108,21 +119,28 @@ def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5) -> List
     """
     filtered_detections = []
     for frame_detections in detections:
-        conf = frame_detections[:,0]
-        frame_detections = torch.Tensor(frame_detections[conf > conf_threshold])
+        conf = frame_detections[:, 0]
+        frame_detections = torch.Tensor(
+            frame_detections[conf > conf_threshold])
 
-        xyxy = box_convert(frame_detections[:, 1:], in_fmt="cxcywh", out_fmt="xyxy")
-        best_candidates = nms(xyxy, frame_detections[:,0], iou_threshold=iou_threshold)
+        xyxy = box_convert(
+            frame_detections[:, 1:], in_fmt="cxcywh", out_fmt="xyxy")
+        best_candidates = nms(
+            xyxy, frame_detections[:, 0], iou_threshold=iou_threshold)
         filtered_detections.append(frame_detections[best_candidates].numpy())
     return filtered_detections
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Tracks objects using detections as input.")
+    parser = argparse.ArgumentParser(
+        description="Tracks objects using detections as input.")
     parser.add_argument("name", help="name of the project to be tracked.")
-    parser.add_argument("--death_time", help="number of frames without an observation before track deletion", default=5)
-    parser.add_argument("--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.2)
-    parser.add_argument("--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
+    parser.add_argument(
+        "--death_time", help="number of frames without an observation before track deletion", default=5)
+    parser.add_argument(
+        "--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.2)
+    parser.add_argument(
+        "--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
     args = parser.parse_args()
     name = args.name
 
@@ -131,7 +149,8 @@ if __name__ == "__main__":
     for frame_number, frame_name in enumerate(detections):
         detections_list.append(detections[frame_name])
 
-    detections_list = filter_detections(detections_list, float(args.conf_threshold), float(args.iou_threshold))
+    detections_list = filter_detections(detections_list, float(
+        args.conf_threshold), float(args.iou_threshold))
     tracks = track(detections_list, death_time=int(args.death_time))
 
     track_lives = [track.encode_in_dictionary() for track in tracks]
@@ -142,4 +161,3 @@ if __name__ == "__main__":
     with open(f"internal/{name}.yaml", 'w') as f:
         yaml.safe_dump(dictionary, f)
     print(f"saved {len(track_lives)} tracks to internal/{name}.yaml")
-

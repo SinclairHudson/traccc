@@ -1,15 +1,14 @@
 from abc import ABC
+
+import numpy as np
+import torch
+from torchvision.io import write_video
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.ops import box_convert
+from torchvision.transforms import Normalize, ToPILImage, ToTensor
 from torchvision.utils import draw_bounding_boxes
-from torchvision.io import write_video
-import torch
-import numpy as np
 from tqdm import tqdm
-from torchvision.transforms import ToPILImage, ToTensor, Normalize
 from transformers import DetrFeatureExtractor, DetrForObjectDetection
-
-
 
 SPORTS_BALL = 37  # from coco class mapping
 
@@ -47,7 +46,8 @@ class Detector(ABC):
             # draw boxes on single frame
             # write frame to mp4
             CHW = torch.permute(frame, (2, 0, 1))  # move channels to front
-            video[i] = torch.permute(draw_bounding_boxes(CHW, torch.Tensor(detections[i]), colors="red", width=5), (1, 2, 0))  # move C back to end, save in tensor
+            video[i] = torch.permute(draw_bounding_boxes(CHW, torch.Tensor(
+                detections[i]), colors="red", width=5), (1, 2, 0))  # move C back to end, save in tensor
         print("writing the video")
         write_video(outfile, video, video_codec="h264", fps=60.0)
 
@@ -55,11 +55,10 @@ class Detector(ABC):
 class PretrainedRN50Detector(Detector):
     def __init__(self):
         self.model = fasterrcnn_resnet50_fpn(pretrained=True, num_classes=91,
-                                        pretrained_backbone=True)
+                                             pretrained_backbone=True)
 
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.model.eval().to(self.device)
-
 
     @torch.no_grad()
     def detect_video(self, video, bbox_format="cxcywh"):
@@ -83,18 +82,21 @@ class PretrainedRN50Detector(Detector):
                 xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
                 conf = res["scores"][res["labels"] == SPORTS_BALL]
                 xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
-                cxywh = torch.cat((conf.unsqueeze(1), xywh), dim=1)  # add confidences
+                cxywh = torch.cat((conf.unsqueeze(1), xywh),
+                                  dim=1)  # add confidences
                 video_detections.append(cxywh.cpu().numpy())
         return video_detections
 
+
 class HuggingFaceDETR(Detector):
     def __init__(self):
-        self.feature_extractor = DetrFeatureExtractor.from_pretrained('facebook/detr-resnet-101-dc5')
-        self.model = DetrForObjectDetection.from_pretrained('facebook/detr-resnet-101-dc5')
+        self.feature_extractor = DetrFeatureExtractor.from_pretrained(
+            'facebook/detr-resnet-101-dc5')
+        self.model = DetrForObjectDetection.from_pretrained(
+            'facebook/detr-resnet-101-dc5')
 
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.model.eval().to(self.device)
-
 
     @torch.no_grad()
     def detect_video(self, video, bbox_format="cxcywh"):
@@ -115,7 +117,8 @@ class HuggingFaceDETR(Detector):
             inputs["pixel_mask"] = inputs["pixel_mask"].to(self.device)
 
             outputs = self.model(**inputs)
-            outputs["logits"] = outputs["logits"].squeeze(0)  # remove singleton batch dim
+            outputs["logits"] = outputs["logits"].squeeze(
+                0)  # remove singleton batch dim
             outputs["pred_boxes"] = outputs["pred_boxes"].squeeze(0)
             confs = torch.nn.functional.softmax(outputs["logits"], dim=1)
             conf_scores, indices = torch.max(confs, dim=1)
@@ -126,9 +129,7 @@ class HuggingFaceDETR(Detector):
             xywh[:, 2] *= height
             xywh[:, 1] *= width
             xywh[:, 3] *= width
-            cxywh = torch.cat((conf_scores.unsqueeze(1), xywh), dim=1)  # add confidences
+            cxywh = torch.cat((conf_scores.unsqueeze(1), xywh),
+                              dim=1)  # add confidences
             video_detections.append(cxywh.cpu().numpy())
         return video_detections
-
-
-
