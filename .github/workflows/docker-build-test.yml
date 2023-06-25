@@ -4,10 +4,9 @@ on: [push]
 jobs:
   build:
    runs-on: ubuntu-latest
-  
    steps:
      - uses: actions/checkout@v2
      - name: Build Docker image 
        run: docker build -t balltracking . 
      - name: Run tests inside the container
-       run: docker run -v $(pwd):balltracking --ipc host balltracking pytest
+       run: docker run -v $(pwd):/balltracking --ipc host balltracking pytest
