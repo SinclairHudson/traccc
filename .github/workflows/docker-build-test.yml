@@ -1,7 +1,6 @@
 name: Docker build and Pytest
 
-on:
-  workflow_dispatch 
+on: [push]
 jobs:
   build:
    runs-on: ubuntu-latest
@@ -9,6 +8,6 @@ jobs:
    steps:
      - uses: actions/checkout@v2
      - name: Build Docker image 
-       run: docker build -t balltracking .
+       run: docker build -t balltracking . 
      - name: Run tests inside the container
-       run: docker run balltracking pytest
+       run: docker run -v $(pwd):balltracking --ipc host balltracking pytest
