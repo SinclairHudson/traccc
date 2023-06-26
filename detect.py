@@ -20,5 +20,8 @@ if __name__ == "__main__":
     }
 
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
+    metadata = skvideo.io.ffprobe(f"io/{name}.mp4")
+    frame_count = int(metadata['video']['@nb_frames'])
+
     detector = model_selector[args.model]()
-    detector.detect(vid_generator, filename=f"internal/{name}.npz")
+    detector.detect(vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)

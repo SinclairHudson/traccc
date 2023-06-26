@@ -31,11 +31,11 @@ class Detector(ABC):
     def __init__(self):
         raise NotImplementedError
 
-    def detect_video(self, video, bbox_format="cxcywh"):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
         raise NotImplementedError
 
-    def detect(self, video, filename="internal/detections.npz"):
-        detections = self.detect_video(video)
+    def detect(self, video, filename="internal/detections.npz", frame_count: int = None):
+        detections = self.detect_video(video, frame_count=frame_count)
         np.savez(filename, *detections)
         print(f"saved detections in {filename}")
 
@@ -61,7 +61,7 @@ class PretrainedRN50Detector(Detector):
         self.model.eval().to(self.device)
 
     @torch.no_grad()
-    def detect_video(self, video, bbox_format="cxcywh"):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
         """
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
@@ -72,7 +72,7 @@ class PretrainedRN50Detector(Detector):
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
-        for frame in tqdm(video):
+        for frame in tqdm(video, total=frame_count):
 
             batch = torch.Tensor(frame).unsqueeze(0)
             batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
@@ -99,7 +99,7 @@ class HuggingFaceDETR(Detector):
         self.model.eval().to(self.device)
 
     @torch.no_grad()
-    def detect_video(self, video, bbox_format="cxcywh"):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
         """
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
@@ -110,7 +110,7 @@ class HuggingFaceDETR(Detector):
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
-        for frame in tqdm(video):
+        for frame in tqdm(video, total=frame_count):
             width, height, c = frame.shape
             inputs = self.feature_extractor(images=frame, return_tensors="pt")
             inputs["pixel_values"] = inputs["pixel_values"].to(self.device)
