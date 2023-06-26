@@ -1,13 +1,15 @@
-from filterpy.kalman import KalmanFilter
 import numpy as np
+from filterpy.kalman import KalmanFilter
 
 DIM_X = 4  # position_x, position_y, velocity_x, velocity_y
 DIM_Z = 2  # position, (x, y) in image coordinates (top left is origin)
+
 
 class Track:
     """
     This is a class representing a single track, ideally a single object and its movements
     """
+
     def __init__(self, track_id, initial_pos, start_frame, death_time: int = 5):
         self.id = track_id
         self.prev_states = []  # tracks all previous estimates of position, and velocity
@@ -28,9 +30,9 @@ class Track:
                               [0, 1, 0, 0]])
         self.kf.P *= 1000
 
-        self.age = 0 # in the first frame, age is 0
+        self.age = 0  # in the first frame, age is 0
         self.time_missing = 0
-        self.active=True
+        self.active = True
 
     def predict(self):
         """
@@ -61,6 +63,5 @@ class Track:
             "start_frame": self.start_frame,
             "states": [a.tolist() for a in self.prev_states],
             "age": self.age
-            }
+        }
         return life
-
