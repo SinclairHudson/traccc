@@ -1,6 +1,8 @@
-from detectors import HuggingFaceDETR, PretrainedRN50Detector
-import skvideo.io
 import pytest
+import skvideo.io
+
+from detectors import HuggingFaceDETR, PretrainedRN50Detector
+
 
 @pytest.mark.parametrize("DetectorClass", [HuggingFaceDETR, PretrainedRN50Detector])
 def test_detector_single_ball_tarmac(DetectorClass):
@@ -12,4 +14,5 @@ def test_detector_single_ball_tarmac(DetectorClass):
     frame_count = int(metadata['video']['@nb_frames'])
     assert len(result) == frame_count
     for frame_detections in result:
-        assert len(frame_detections) == 1  # there's only one ball
+        # there must be a ball detected. there could be multiple boxes because no NMS
+        assert len(frame_detections) >= 1

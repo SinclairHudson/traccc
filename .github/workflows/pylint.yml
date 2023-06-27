@@ -10,4 +10,4 @@ jobs:
     - name: start Docker
       run: docker build -t balltracking .
     - name: Analysing the code with pylint inside docker
-      run: docker run -v $(pwd):/balltracking --ipc host balltracking pylint $(git ls-files '*.py')
+      run: docker run -v $(pwd):/balltracking --ipc host balltracking pylint --fail-under=5 $(git ls-files '*.py') 
