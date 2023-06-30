@@ -17,6 +17,9 @@ from trackers import Track
 
 
 def euclidean_distance(track: Track, detection):
+    """
+    calculates euclidean distance between a track and a detection in pixel space
+    """
     assert len(detection) == 5  # confidence, x, y, w, h
     assert len(track.kf.x) == 4  # x, y, vx, vy
     return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
@@ -47,7 +50,7 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance, max
     return cost, row_ind, col_ind
 
 
-def track(detections, death_time: int = 5):
+def track(detections, death_time: int = 5, max_cost: float = np.infty):
     """
     detections is a list of detections, every entry is a frame
     """
@@ -77,7 +80,7 @@ def track(detections, death_time: int = 5):
         else:  # there are some detections
             if len(tracks) > 0:
                 cost, row_ind, col_ind = hungarian_matching(
-                    tracks, frame_detections)
+                    tracks, frame_detections, max_cost=max_cost)
                 print(f"cost: {cost}")
                 for i in range(len(row_ind)):
                     # update the matched tracks
@@ -141,6 +144,8 @@ if __name__ == "__main__":
         "--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.2)
     parser.add_argument(
         "--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
+    parser.add_argument(
+        "--max_cost", help="the maximum cost tolerated to match a track to a detection.", default=np.infty)
     args = parser.parse_args()
     name = args.name
 
@@ -151,7 +156,8 @@ if __name__ == "__main__":
 
     detections_list = filter_detections(detections_list, float(
         args.conf_threshold), float(args.iou_threshold))
-    tracks = track(detections_list, death_time=int(args.death_time))
+    tracks = track(detections_list, death_time=int(
+        args.death_time), max_cost=float(args.max_cost))
 
     track_lives = [track.encode_in_dictionary() for track in tracks]
     dictionary = {
