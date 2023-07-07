@@ -1,7 +1,7 @@
 from abc import ABC
 import cv2
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List, Dict
 
 
 class Effect(ABC):
@@ -17,8 +17,36 @@ class Effect(ABC):
         else:
             return False
 
+    def draw_tracks(self, frame, tracks: List[dict], frame_number: int):
+        """
+        The default is to draw every track independently
+        """
+        out_frame = frame
+        for track in tracks:
+            out_frame = self.draw(frame, track, frame_number)
+        return out_frame
+
     def draw(self, frame, track, frame_number):
         raise NotImplementedError
+
+
+class FullyConnected(Effect):
+    def __init__(self, colour: Tuple[int], size: int = 10):
+        self.colour = colour
+        self.size = size
+
+    def draw_tracks(self, frame, tracks: List[dict], frame_number: int):
+        out_frame = frame
+        state_indexes = [frame_number - track["start_frame"]
+                         for track in tracks]
+        positions = [track["states"][max(0, i-1)][:2]  # TODO investigate why this offset looks better
+                     for track, i in zip(tracks, state_indexes)]
+        # draw a line between each pair of points
+        for i, (x1, y1) in enumerate(positions):
+            for j, (x2, y2) in enumerate(positions[i+1:]):
+                out_frame = cv2.line(out_frame, (int(x1), int(y1)), (int(
+                    x2), int(y2)), self.colour, thickness=self.size)
+        return out_frame
 
 
 class Dot(Effect):
@@ -30,7 +58,7 @@ class Dot(Effect):
         i = frame_number - track["start_frame"]
         (x, y) = track["states"][i][:2]
         return cv2.circle(frame, (int(x), int(y)), radius=self.size,
-                          color=(255, 0, 0), thickness=-1)
+                          color=self.colour, thickness=-1)
 
 
 class LaggingDot(Effect):
