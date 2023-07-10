@@ -81,7 +81,6 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
             if len(tracks) > 0:
                 cost, row_ind, col_ind = hungarian_matching(
                     tracks, frame_detections, max_cost=max_cost)
-                print(f"cost: {cost}")
                 for i in range(len(row_ind)):
                     # update the matched tracks
                     tracks[row_ind[i]].update(frame_detections[col_ind[i]])
@@ -97,8 +96,7 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
                 unmatched_detection_indices = set(
                     range(len(frame_detections))) - set(col_ind)
                 for i in unmatched_detection_indices:
-                    print(
-                        f"birthed track {next_track_id} on frame {frame_number}")
+                    # print(f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(
                         Track(next_track_id, frame_detections[i], frame_number, death_time=death_time))
                     next_track_id += 1

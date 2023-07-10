@@ -20,13 +20,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--length", help="length of the effect in frames", default=10)
     parser.add_argument(
-        "--size", help="size or width of the effect", default=10)
+        "--size", help="size or width of the effect", default=5)
+    parser.add_argument(
+        "--output", help="the output file", default="NAME_out.mp4")
     args = parser.parse_args()
     name = args.name
     effect = args.effect
     colour = args.colour
     length = int(args.length)
     size = int(args.size)
+    if args.output == "NAME_out.mp4":
+        output = f"{name}_out.mp4"
+    else:
+        output = args.output
     # vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
     vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_out.mp4")
@@ -41,12 +47,13 @@ if __name__ == "__main__":
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     # TODO make sure width, height is correct in following line
     opencv_out = cv2.VideoWriter(
-        f'io/{name}_out.mp4', fourcc, fps, (width, height))
+        f'io/{output}', fourcc, fps, (width, height))
 
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
     colour = {
+        "pink": (255, 0, 230),
         "red": (255, 0, 0),
         "orange": (252, 132, 0),
         "yellow": (252, 211, 3),
@@ -64,6 +71,7 @@ if __name__ == "__main__":
         "highlight_line": HighlightLine(colour, length, size),
         "contrail": Contrail(colour, length, size),
         "fully_connected": FullyConnected(colour, size),
+        "fully_connected_neon": FullyConnectedNeon(colour, size),
     }[effect]
 
     tracks = track_dictionary["tracks"]

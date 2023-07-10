@@ -48,6 +48,36 @@ class FullyConnected(Effect):
                     x2), int(y2)), self.colour, thickness=self.size)
         return out_frame
 
+class FullyConnectedNeon(Effect):
+    def __init__(self, colour: Tuple[int], size: int = 10):
+        self.colour = colour
+        self.size = size if size % 2 == 1 else size + 1  # must be odd
+
+    def draw_tracks(self, frame, tracks: List[dict], frame_number: int):
+        blank = np.zeros_like(frame, dtype=np.uint8)
+        state_indexes = [frame_number - track["start_frame"]
+                         for track in tracks]
+        positions = [track["states"][max(0, i-1)][:2]  # TODO investigate why this offset looks better
+                     for track, i in zip(tracks, state_indexes)]
+        # draw a line between each pair of points
+        for i, (x1, y1) in enumerate(positions):
+            for j, (x2, y2) in enumerate(positions[i+1:]):
+                blank = cv2.line(blank, (int(x1), int(y1)), (int(
+                    x2), int(y2)), self.colour, thickness=self.size * 3)
+
+        blank = cv2.GaussianBlur(
+            blank, (self.size * 3, self.size * 3), self.size//2)
+
+        out_frame = cv2.addWeighted(frame, 1, blank, 1, 0)
+
+        for i, (x1, y1) in enumerate(positions):
+            for j, (x2, y2) in enumerate(positions[i+1:]):
+                # white lines
+                out_frame = cv2.line(out_frame, (int(x1), int(y1)), (int(
+                    x2), int(y2)), (255, 255, 255), thickness=self.size)
+
+        return out_frame
+
 
 class Dot(Effect):
     def __init__(self, colour: Tuple[int], size: int = 10):

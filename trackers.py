@@ -44,8 +44,8 @@ class Track:
         """
         Update our estimate of the state given the measurement. Calculate the posterior.
         """
-        self.age += 1
         self.prev_states.append(self.kf.x)
+        self.age += 1
         if measurement is None:  # on this iteration, didn't see this object
             self.time_missing += 1
             if self.time_missing > self.death_time:
