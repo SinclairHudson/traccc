@@ -59,3 +59,7 @@ py3 detect.py -h
 
 Contributions are welcome! Open an issue or a pull request, and I'll get to it when I can.
 Adding new effects is an easy contribution to make.
+
+### TODO
+
+- [ ] make a debug effect that displays measurements, tracks, and their states.

@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     model_selector = {
         "DETR": HuggingFaceDETR,
-        "Pretrained": PretrainedRN50Detector
+        "RN50": PretrainedRN50Detector
     }
 
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")

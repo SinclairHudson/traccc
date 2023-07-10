@@ -33,6 +33,7 @@ class Track:
         self.age = 0  # in the first frame, age is 0
         self.time_missing = 0
         self.active = True
+        self.prev_measurements = []
 
     def predict(self):
         """
@@ -45,6 +46,7 @@ class Track:
         Update our estimate of the state given the measurement. Calculate the posterior.
         """
         self.prev_states.append(self.kf.x)
+        self.prev_measurements.append(measurement)
         self.age += 1
         if measurement is None:  # on this iteration, didn't see this object
             self.time_missing += 1
@@ -62,6 +64,7 @@ class Track:
             "id": self.id,
             "start_frame": self.start_frame,
             "states": [a.tolist() for a in self.prev_states],
+            "measurements": [a.tolist() if a is not None else None for a in self.prev_measurements],
             "age": self.age
         }
         return life
