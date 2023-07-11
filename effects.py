@@ -48,6 +48,7 @@ class FullyConnected(Effect):
                     x2), int(y2)), self.colour, thickness=self.size)
         return out_frame
 
+
 class FullyConnectedNeon(Effect):
     def __init__(self, colour: Tuple[int], size: int = 10):
         self.colour = colour
@@ -135,6 +136,47 @@ class Line(Effect):
             (x2, y2) = track["states"][i+1][:2]
             frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
                              color=self.colour, thickness=self.size)
+        return frame
+
+
+def draw_x(frame, x, y, colour, size):
+    frame = cv2.line(frame, (int(x-size), int(y-size)), (int(x+size),
+             int(y+size)), color=colour, thickness=size//3)
+    return cv2.line(frame, (int(x-size), int(y+size)), (int(x+size), int(y-size)), color=colour, thickness=size)
+
+
+class Debug(Effect):
+    def __init__(self, length_in_frames: int = 15, size: int = 10):
+        self.length_in_frames = length_in_frames
+        self.size = size
+        self.colours = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 0, 230), (252, 132, 0)]
+
+
+    def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
+        start_line = max(1, frame_number -
+                         self.length_in_frames - track["start_frame"])
+        end_line = frame_number - track["start_frame"]
+
+        colour = self.colours[track["id"] % len(self.colours)]
+        for i in range(start_line, end_line):
+            (x, y) = track["states"][i][:2]
+            (x2, y2) = track["states"][i-1][:2]
+            frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
+                             color=colour, thickness=self.size)
+
+            meas = track["measurements"][i]
+            if meas is None:
+                frame = draw_x(frame, x, y, colour, self.size * 2)
+            else:  # a matched detection
+                mx, my = meas[1:3]
+                frame = cv2.circle(frame, (int(x), int(y)), color=colour,
+                                   radius=self.size + 3, thickness=-1)
+                frame = cv2.circle(frame, (int(mx), int(my)),
+                                   color=(255, 255, 255), radius=self.size, thickness=-1)
+                frame = cv2.line(frame, (int(mx), int(my)),
+                                   (int(x), int(y)), color=(255, 255, 255),
+                                   thickness=self.size)
+
         return frame
 
 

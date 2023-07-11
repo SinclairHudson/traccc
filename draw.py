@@ -72,6 +72,7 @@ if __name__ == "__main__":
         "contrail": Contrail(colour, length, size),
         "fully_connected": FullyConnected(colour, size),
         "fully_connected_neon": FullyConnectedNeon(colour, size),
+        "debug": Debug(length, size),
     }[effect]
 
     tracks = track_dictionary["tracks"]

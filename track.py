@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
     parser.add_argument(
-        "--max_cost", help="the maximum cost tolerated to match a track to a detection.", default=np.infty)
+        "--max_cost", help="the maximum cost tolerated to match a track to a detection.", default=50)
     args = parser.parse_args()
     name = args.name
 
