@@ -9,6 +9,7 @@ from torchvision.transforms import Normalize, ToPILImage, ToTensor
 from torchvision.utils import draw_bounding_boxes
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor, DetrForObjectDetection
+import cv2
 
 SPORTS_BALL = 37  # from coco class mapping
 
@@ -132,4 +133,33 @@ class HuggingFaceDETR(Detector):
             cxywh = torch.cat((conf_scores.unsqueeze(1), xywh),
                               dim=1)  # add confidences
             video_detections.append(cxywh.cpu().numpy())
+        return video_detections
+
+
+class CircleDetector(Detector):
+    def __init__(self, max_radius=300):
+        self.max_radius = max_radius
+        pass
+    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
+        """
+        video is a generator
+        output is a list of numpy arrays denoting bounding boxes for each frame
+        """
+        video_detections = []  # list of list of detections
+
+        print("detecting balls in the video")
+        for frame in tqdm(video, total=frame_count):
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.medianBlur(gray, 3)
+            rows = gray.shape[0]
+            # probably some histeresis thresholding with param1 and 2.
+            circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, rows / 4,
+                                       param1=100, param2=30, minRadius=2, maxRadius=self.max_radius)
+
+            cxywh = np.zeros((0, 5))
+            if circles is not None:
+                for circ in circles[0]:  # shape is 1 x N x 3 for some reason
+                    cxywh = np.concatenate((cxywh, np.array([[1.0, circ[0], circ[1], circ[2], circ[2]]])), axis=0)
+
+            video_detections.append(cxywh)
         return video_detections

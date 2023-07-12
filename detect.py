@@ -1,10 +1,8 @@
 import argparse
 
 import skvideo.io
-import torch
-from torchvision.io import VideoReader, read_video
 
-from detectors import HuggingFaceDETR, PretrainedRN50Detector
+from detectors import HuggingFaceDETR, PretrainedRN50Detector, CircleDetector
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -16,7 +14,8 @@ if __name__ == "__main__":
 
     model_selector = {
         "DETR": HuggingFaceDETR,
-        "RN50": PretrainedRN50Detector
+        "RN50": PretrainedRN50Detector,
+        "circle": CircleDetector
     }
 
     vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
