@@ -43,7 +43,7 @@ class FullyConnected(Effect):
                      for track, i in zip(tracks, state_indexes)]
         # draw a line between each pair of points
         for i, (x1, y1) in enumerate(positions):
-            for j, (x2, y2) in enumerate(positions[i+1:]):
+            for _, (x2, y2) in enumerate(positions[i+1:]):
                 out_frame = cv2.line(out_frame, (int(x1), int(y1)), (int(
                     x2), int(y2)), self.colour, thickness=self.size)
         return out_frame
@@ -62,7 +62,7 @@ class FullyConnectedNeon(Effect):
                      for track, i in zip(tracks, state_indexes)]
         # draw a line between each pair of points
         for i, (x1, y1) in enumerate(positions):
-            for j, (x2, y2) in enumerate(positions[i+1:]):
+            for _, (x2, y2) in enumerate(positions[i+1:]):
                 blank = cv2.line(blank, (int(x1), int(y1)), (int(
                     x2), int(y2)), self.colour, thickness=self.size * 3)
 
@@ -72,7 +72,7 @@ class FullyConnectedNeon(Effect):
         out_frame = cv2.addWeighted(frame, 1, blank, 1, 0)
 
         for i, (x1, y1) in enumerate(positions):
-            for j, (x2, y2) in enumerate(positions[i+1:]):
+            for _, (x2, y2) in enumerate(positions[i+1:]):
                 # white lines
                 out_frame = cv2.line(out_frame, (int(x1), int(y1)), (int(
                     x2), int(y2)), (255, 255, 255), thickness=self.size)

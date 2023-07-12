@@ -19,7 +19,7 @@ def show(imgs):
     """
     if not isinstance(imgs, list):
         imgs = [imgs]
-    fix, axs = plt.subplots(ncols=len(imgs), squeeze=False)
+    _, axs = plt.subplots(ncols=len(imgs), squeeze=False)
     for i, img in enumerate(imgs):
         img = img.detach()
         img = F.to_pil_image(img)
@@ -31,7 +31,7 @@ class Detector(ABC):
     def __init__(self):
         raise NotImplementedError
 
-    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None):
         raise NotImplementedError
 
     def detect(self, video, filename="internal/detections.npz", frame_count: int = None):
@@ -61,19 +61,18 @@ class PretrainedRN50Detector(Detector):
         self.model.eval().to(self.device)
 
     @torch.no_grad()
-    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None):
         """
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
-        batch_size = 16
+        # TODO batch these calls
         video_detections = []  # list of list of detections
         ZeroOne = Normalize((0, 0, 0), (255, 255, 255))  # divide to 0 to 1
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
         for frame in tqdm(video, total=frame_count):
-
             batch = torch.Tensor(frame).unsqueeze(0)
             batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
             batch = ZeroOne(batch.float())
@@ -104,14 +103,12 @@ class HuggingFaceDETR(Detector):
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
-        batch_size = 16
         video_detections = []  # list of list of detections
-        ZeroOne = Normalize((0, 0, 0), (255, 255, 255))  # divide to 0 to 1
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
         for frame in tqdm(video, total=frame_count):
-            width, height, c = frame.shape
+            width, height, _ = frame.shape
             inputs = self.feature_extractor(images=frame, return_tensors="pt")
             inputs["pixel_values"] = inputs["pixel_values"].to(self.device)
             inputs["pixel_mask"] = inputs["pixel_mask"].to(self.device)

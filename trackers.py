@@ -1,5 +1,6 @@
 import numpy as np
 from filterpy.kalman import KalmanFilter
+import numpy as np
 
 DIM_X = 4  # position_x, position_y, velocity_x, velocity_y
 DIM_Z = 2  # position, (x, y) in image coordinates (top left is origin)
@@ -10,13 +11,13 @@ class Track:
     This is a class representing a single track, ideally a single object and its movements
     """
 
-    def __init__(self, track_id, initial_pos, start_frame, death_time: int = 5):
+    def __init__(self, track_id: int, initial_pos: np.ndarray, start_frame: int, death_time: int = 5):
         self.id = track_id
         self.prev_states = []  # tracks all previous estimates of position, and velocity
         self.start_frame = start_frame
         self.death_time = death_time
 
-        assert len(initial_pos) == 5  # xywh
+        assert len(initial_pos) == 5  # cxywh
         self.kf = KalmanFilter(dim_x=DIM_X, dim_z=DIM_Z)
         # initial pos is xywh
         # state (x vector) is [x, y, vx, vy]
@@ -35,13 +36,13 @@ class Track:
         self.active = True
         self.prev_measurements = []
 
-    def predict(self):
+    def predict(self) -> None:
         """
         Advances the KalmanFilter, predicting the current state based on the prior
         """
         self.kf.predict()
 
-    def update(self, measurement):
+    def update(self, measurement: np.ndarray) -> None:
         """
         Update our estimate of the state given the measurement. Calculate the posterior.
         """
@@ -58,13 +59,14 @@ class Track:
             measurement_xy = measurement[1:3]
             self.kf.update(measurement_xy)
 
-    def encode_in_dictionary(self):
+    def encode_in_dictionary(self) -> dict:
         # need to convert to vanilla python data types and dictionary for saving
         life = {
             "id": self.id,
             "start_frame": self.start_frame,
             "states": [a.tolist() for a in self.prev_states],
-            "measurements": [a.tolist() if a is not None else None for a in self.prev_measurements],
+            "measurements": [a.tolist() if a is not None else None
+                             for a in self.prev_measurements],
             "age": self.age
         }
         return life
