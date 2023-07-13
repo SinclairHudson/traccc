@@ -1,6 +1,8 @@
 # ball-tracking
 
-![debug output of the pipeline](img/debug.png)
+|||
+|---|---|
+|![debug output of the pipeline](img/debug.png)|![sample contrail output](img/contrail.png)|
 
 A command line interface tool to track sports balls, and add interesting visual effects. 
 

@@ -88,8 +88,8 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
                 unmatched_track_indices = set(
                     range(len(tracks))) - set(row_ind)
                 for i in unmatched_track_indices:
-                    print(
-                        f"track {tracks[i].id} unmatched on frame {frame_number}")
+                    # print(
+                        # f"track {tracks[i].id} unmatched on frame {frame_number}")
                     tracks[i].update(None)
 
                 # births
@@ -104,8 +104,8 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
             else:  # no tracks, but detections
                 # births
                 for detection in frame_detections:
-                    print(
-                        f"birthed track {next_track_id} on frame {frame_number}")
+                    # print(
+                        # f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(Track(next_track_id, detection,
                                   frame_number, death_time=death_time))
                     next_track_id += 1
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
     parser.add_argument(
-        "--max_cost", help="the maximum cost tolerated to match a track to a detection.", default=50)
+        "--max_cost", help="the maximum cost tolerated to match a track to a detection.", default=200)
     args = parser.parse_args()
     name = args.name
 

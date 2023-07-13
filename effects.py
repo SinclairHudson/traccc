@@ -23,7 +23,8 @@ class Effect(ABC):
         """
         out_frame = frame
         for track in tracks:
-            out_frame = self.draw(frame, track, frame_number)
+            # print(f"drawing track {track['id']}")
+            out_frame = self.draw(out_frame, track, frame_number)
         return out_frame
 
     def draw(self, frame, track, frame_number):
@@ -127,13 +128,13 @@ class Line(Effect):
         self.size = size
 
     def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
-        start_line = max(0, frame_number -
+        start_line = max(1, frame_number -
                          self.length_in_frames - track["start_frame"])
         end_line = frame_number - track["start_frame"]
 
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
-            (x2, y2) = track["states"][i+1][:2]
+            (x2, y2) = track["states"][i-1][:2]
             frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
                              color=self.colour, thickness=self.size)
         return frame
@@ -187,7 +188,7 @@ class HighlightLine(Effect):
         self.size = size
 
     def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
-        start_line = max(0, frame_number -
+        start_line = max(1, frame_number -
                          self.length_in_frames - track["start_frame"])
         end_line = frame_number - track["start_frame"]
 
@@ -195,10 +196,11 @@ class HighlightLine(Effect):
 
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
-            (x2, y2) = track["states"][i+1][:2]
+            (x2, y2) = track["states"][i-1][:2]
             blank = cv2.line(blank, (int(x), int(y)), (int(x2), int(y2)),
                              color=self.colour, thickness=self.size)
-            blank = cv2.GaussianBlur(blank, (self.size//2, self.size//2), 0)
+
+        blank = cv2.GaussianBlur(blank, (self.size//2, self.size//2), 0)
 
         return cv2.addWeighted(frame, 1, blank, 1, 0)
 
@@ -210,7 +212,7 @@ class Contrail(Effect):
         self.size = size if size % 2 == 1 else size + 1  # must be odd
 
     def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
-        start_line = max(0, frame_number -
+        start_line = max(1, frame_number -
                          self.length_in_frames - track["start_frame"])
         end_line = frame_number - track["start_frame"]
 
@@ -218,7 +220,7 @@ class Contrail(Effect):
 
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
-            (x2, y2) = track["states"][i+1][:2]
+            (x2, y2) = track["states"][i-1][:2]
             blank = cv2.line(blank, (int(x), int(y)), (int(x2), int(y2)),
                              color=self.colour, thickness=self.size)
             blank = cv2.GaussianBlur(
