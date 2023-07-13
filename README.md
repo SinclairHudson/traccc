@@ -1,5 +1,7 @@
 # ball-tracking
 
+![debug output of the pipeline](img/debug.png)
+
 A command line interface tool to track sports balls, and add interesting visual effects. 
 
 Running this project is fairly demanding.

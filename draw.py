@@ -12,8 +12,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Draws effects on the video, based on the tracks")
     parser.add_argument("name", help="name of the project")
+    parser.add_argument("--input", help="video file to be used", default=None)
     parser.add_argument(
-        "--effect", help="name of effect you wish to use", default="red_dot")
+        "--effect", help="name of effect you wish to use", default="line")
     parser.add_argument(
         "--min_age", help="tracks below this age don't get drawn", default=0)
     parser.add_argument("--colour", help="colour of the effect", default="red")
@@ -22,21 +23,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--size", help="size or width of the effect", default=5)
     parser.add_argument(
-        "--output", help="the output file", default="NAME_out.mp4")
+        "--output", help="the output file", default=None)
     args = parser.parse_args()
     name = args.name
     effect = args.effect
     colour = args.colour
     length = int(args.length)
     size = int(args.size)
-    if args.output == "NAME_out.mp4":
-        output = f"{name}_out.mp4"
+    if args.output == None:
+        output = f"io/{name}_out.mp4"
     else:
         output = args.output
-    # vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
-    vid_generator = skvideo.io.vreader(f"io/{name}.mp4")
-    vid_writer = skvideo.io.FFmpegWriter(f"io/{name}_out.mp4")
-    metadata = skvideo.io.ffprobe(f"io/{name}.mp4")
+
+    if args.input == None:
+        input_video = f"io/{name}.mp4"
+    else:
+        input_video = args.input
+
+    vid_generator = skvideo.io.vreader(input_video)
+    metadata = skvideo.io.ffprobe(input_video)
     frame_count = int(metadata['video']['@nb_frames'])
     fps = metadata['video']['@r_frame_rate']
     numerator, denominator = map(int, fps.split('/'))
@@ -47,7 +52,7 @@ if __name__ == "__main__":
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     # TODO make sure width, height is correct in following line
     opencv_out = cv2.VideoWriter(
-        f'io/{output}', fourcc, fps, (width, height))
+        output, fourcc, fps, (width, height))
 
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
