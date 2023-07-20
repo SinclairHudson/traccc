@@ -59,6 +59,20 @@ py3 detect.py -h
 
 ---
 
+## Best Practices:
+
+1. Use a **high framerate**. Most cameras can shoot 60fps now, go as high as you can.
+Every frame is additional information for the tracker, so it's better able to track the balls.
+2. Use a **fast shutter speed**. This is usually implied by high framerate, but technically different.
+A fast shutter speed will **reduce motion blur**, making the balls in every frame look more like balls 
+and thus making them easier to detect.
+3. Expose for the balls. If the exposure of the camera is too high or too low, the balls will lose detail
+and they'll be almost impossible to detect, because they won't look like balls. Even lighting is best,
+so the camera doesn't have to expose for the highlights or the shadows.
+4. Use a **small file to test ideas**. Some of the effects and detections are very slow to run,
+especially without a GPU. It's best to test and tweak an effect on a short clip, iterate fast, and then
+apply it to a longer clip once you're sure you have what you want.
+
 ## Contributing
 
 Contributions are welcome! Open an issue or a pull request, and I'll get to it when I can.
