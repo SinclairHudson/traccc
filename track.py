@@ -21,7 +21,7 @@ def euclidean_distance(track: Track, detection):
     calculates euclidean distance between a track and a detection in pixel space
     """
     assert len(detection) == 5  # confidence, x, y, w, h
-    assert len(track.kf.x) == 4  # x, y, vx, vy
+    assert len(track.kf.x) == 6  # x, y, vx, vy, w, h
     return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
 
 

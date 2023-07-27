@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--length", help="length of the effect in frames", default=10)
     parser.add_argument(
-        "--size", help="size or width of the effect", default=5)
+        "--size", help="size or width of the effect", default=1.0)
     parser.add_argument(
         "--output", help="the output file", default=None)
     args = parser.parse_args()
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     effect = {
         "dot": Dot(colour, size),
-        "lagging_blue_dot": LaggingDot(colour, length, size),
+        "lagging_dot": LaggingDot(colour, length, size),
         "line": Line(colour, length, size),
         "highlight_line": HighlightLine(colour, length, size),
         "contrail": Contrail(colour, length, size),
