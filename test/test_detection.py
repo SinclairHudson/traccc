@@ -6,6 +6,10 @@ from detectors import HuggingFaceDETR, PretrainedRN50Detector
 
 @pytest.mark.parametrize("DetectorClass", [HuggingFaceDETR, PretrainedRN50Detector])
 def test_detector_single_ball_tarmac(DetectorClass):
+    """
+    Test that the detector can detect a single ball in a test video, in every single frame.
+    Duplicate detections are acceptable because NMS is not being run.
+    """
     model = DetectorClass()
     # this has 120 frames
     vid_generator = skvideo.io.vreader(f"test_assets/ball_on_tarmac.mp4")

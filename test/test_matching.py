@@ -7,6 +7,9 @@ from trackers import Track
 
 
 def test_matching():
+    """
+    tests that the hungarian matching matches close tracks to close detections
+    """
     tracks = [Track(0, np.array([0.92, 0, 0, 0, 0]), 0),
               Track(1, np.array([0.99, 20, 20, 0, 0]), 0),
               Track(2, np.array([0.39, 50, 40, 0, 0]), 0)]
@@ -20,6 +23,10 @@ def test_matching():
 
 
 def test_reject_large_cost():
+    """
+    tests that the matching algorithm rejects a matching with a cost that is
+    far too large
+    """
     tracks = [Track(0, np.array([0.92, 0, 0, 0, 0]), 0),
               Track(1, np.array([0.99, 20, 20, 0, 0]), 0),
               Track(2, np.array([0.39, 50000, 400000, 0, 0]), 0)]
@@ -38,6 +45,10 @@ def test_reject_large_cost():
 
 
 def test_more_detections_than_tracks():
+    """
+    This function tests that the correct matching is made when there are more
+    detections than tracks.
+    """
     tracks = [Track(0, np.array([0.92, 0, 0, 0, 0]), 0),
               Track(1, np.array([0.99, 20, 20, 0, 0]), 0)]
     detections = np.array([[0.92, 1, 1, 2, 2],
@@ -55,6 +66,10 @@ def test_more_detections_than_tracks():
 
 
 def test_more_tracks_than_detections():
+    """
+    This function tests that when there are more tracks than detections,
+    some of the tracks go unmatched and the cost is still correctly computed.
+    """
     tracks = [Track(0, np.array([0.92, 0, 0, 0, 0]), 0),
               Track(1, np.array([0.99, 20, 20, 0, 0]), 0),
               Track(2, np.array([0.99, 20, 10, 0, 0]), 0),
@@ -90,6 +105,8 @@ def test_track():
 def test_no_track_switch():
     """
     Simple test case to ensure the tracker doesn't switch tracks when it shouldn't.
+    In this test case, the trajectory of two objects cross, but the tracks shouldn't
+    switch
     """
     detections = [np.array([[0.99, 0, 0, 0, 0], [0.99, 100, 0, 0, 0]]),
                   np.array([[0.99, 20, 20, 0, 0], [0.99, 80, 20, 0, 0]]),

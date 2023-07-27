@@ -8,7 +8,6 @@ from typing import List
 import numpy as np
 import torch
 import yaml
-from filterpy.kalman import KalmanFilter
 from scipy.optimize import linear_sum_assignment
 from torchvision.ops import box_convert, nms
 from tqdm import tqdm
@@ -79,7 +78,7 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
 
         else:  # there are some detections
             if len(tracks) > 0:
-                cost, row_ind, col_ind = hungarian_matching(
+                _, row_ind, col_ind = hungarian_matching(
                     tracks, frame_detections, max_cost=max_cost)
                 for i in range(len(row_ind)):
                     # update the matched tracks
@@ -89,7 +88,7 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
                     range(len(tracks))) - set(row_ind)
                 for i in unmatched_track_indices:
                     # print(
-                        # f"track {tracks[i].id} unmatched on frame {frame_number}")
+                    # f"track {tracks[i].id} unmatched on frame {frame_number}")
                     tracks[i].update(None)
 
                 # births
@@ -98,14 +97,15 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
                 for i in unmatched_detection_indices:
                     # print(f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(
-                        Track(next_track_id, frame_detections[i], frame_number, death_time=death_time))
+                        Track(next_track_id, frame_detections[i], frame_number,
+                              death_time=death_time))
                     next_track_id += 1
 
             else:  # no tracks, but detections
                 # births
                 for detection in frame_detections:
                     # print(
-                        # f"birthed track {next_track_id} on frame {frame_number}")
+                    # f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(Track(next_track_id, detection,
                                   frame_number, death_time=death_time))
                     next_track_id += 1

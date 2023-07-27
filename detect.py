@@ -1,8 +1,9 @@
+"""
+Used for detecting objects in a video, and saving to an output.
+"""
 import argparse
 
 import skvideo.io
-import torch
-from torchvision.io import VideoReader, read_video
 
 from detectors import HuggingFaceDETR, PretrainedRN50Detector
 
@@ -28,4 +29,5 @@ if __name__ == "__main__":
     frame_count = int(metadata['video']['@nb_frames'])
 
     detector = model_selector[args.model]()
-    detector.detect(vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)
+    detector.detect(
+        vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)

@@ -1,11 +1,13 @@
 from abc import ABC
 
+import matpliotlib.pyplot as plt
 import numpy as np
 import torch
+import torch.functional as F
 from torchvision.io import write_video
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.ops import box_convert
-from torchvision.transforms import Normalize, ToPILImage, ToTensor
+from torchvision.transforms import Normalize
 from torchvision.utils import draw_bounding_boxes
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor, DetrForObjectDetection
@@ -22,7 +24,7 @@ def show(imgs):
     _, axs = plt.subplots(ncols=len(imgs), squeeze=False)
     for i, img in enumerate(imgs):
         img = img.detach()
-        img = F.to_pil_image(img)
+        img = F.to_pil_image(img)  # pylint: disable=no-member
         axs[0, i].imshow(np.asarray(img))
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
 

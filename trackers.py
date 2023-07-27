@@ -1,6 +1,5 @@
 import numpy as np
 from filterpy.kalman import KalmanFilter
-import numpy as np
 
 DIM_X = 6  # position_x, position_y, velocity_x, velocity_y, width, height
 DIM_Z = 4  # position, (x, y) in image coordinates (top left is origin), width, height
@@ -66,7 +65,10 @@ class Track:
             self.kf.update(measurement_xywh)
 
     def encode_in_dictionary(self) -> dict:
-        # need to convert to vanilla python data types and dictionary for saving
+        """
+        Encodes the track in a dictionary to be saved and used downstream.
+        Uses vanilla python datatypes to allow for YAML serialization.
+        """
         life = {
             "id": self.id,
             "start_frame": self.start_frame,

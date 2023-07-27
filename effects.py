@@ -1,8 +1,9 @@
 from abc import ABC
 import cv2
 import numpy as np
-from typing import Tuple, List, Dict
+from typing import Tuple, List
 
+# pylint: disable=invalid-name, no-member
 
 class Effect(ABC):
     def __init__(self):
