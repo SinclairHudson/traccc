@@ -1,6 +1,6 @@
 from abc import ABC
 
-import matpliotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.functional as F

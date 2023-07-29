@@ -29,7 +29,7 @@ if __name__ == "__main__":
     effect = args.effect
     colour = args.colour
     length = int(args.length)
-    size = int(args.size)
+    size = float(args.size)
     if args.output == None:
         output = f"io/{name}_out.mp4"
     else:
