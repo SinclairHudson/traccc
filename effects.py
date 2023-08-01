@@ -146,7 +146,7 @@ class Line(Effect):
             (x, y, vx, vy, w, h) = track["states"][i]
             (x2, y2) = track["states"][i-1][:2]
             frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
-                             color=self.colour, thickness=self.size*w)
+                             color=self.colour, thickness=int(self.size*w))
         return frame
 
 
