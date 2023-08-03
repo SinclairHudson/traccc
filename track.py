@@ -12,7 +12,7 @@ from scipy.optimize import linear_sum_assignment
 from torchvision.ops import box_convert, nms
 from tqdm import tqdm
 
-from trackers import Track
+from trackers import Track, AccelTrack
 
 
 def euclidean_distance(track: Track, detection):
@@ -20,7 +20,6 @@ def euclidean_distance(track: Track, detection):
     calculates euclidean distance between a track and a detection in pixel space
     """
     assert len(detection) == 5  # confidence, x, y, w, h
-    assert len(track.kf.x) == 6  # x, y, vx, vy, w, h
     return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
 
 
@@ -49,7 +48,7 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance, max
     return cost, row_ind, col_ind
 
 
-def track(detections, death_time: int = 5, max_cost: float = np.infty):
+def track(detections, track_class, death_time: int = 5, max_cost: float = np.infty):
     """
     detections is a list of detections, every entry is a frame
     """
@@ -97,7 +96,7 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
                 for i in unmatched_detection_indices:
                     # print(f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(
-                        Track(next_track_id, frame_detections[i], frame_number,
+                        track_class(next_track_id, frame_detections[i], frame_number,
                               death_time=death_time))
                     next_track_id += 1
 
@@ -106,7 +105,7 @@ def track(detections, death_time: int = 5, max_cost: float = np.infty):
                 for detection in frame_detections:
                     # print(
                     # f"birthed track {next_track_id} on frame {frame_number}")
-                    tracks.append(Track(next_track_id, detection,
+                    tracks.append(track_class(next_track_id, detection,
                                   frame_number, death_time=death_time))
                     next_track_id += 1
 
@@ -139,6 +138,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--death_time", help="number of frames without an observation before track deletion", default=5)
     parser.add_argument(
+        "--track_type", help="track type", default="Track")
+    parser.add_argument(
         "--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.2)
     parser.add_argument(
         "--conf_threshold", help="confidence threshold for removing uncertain predictions, must be in the range [0, 1].", default=0.05)
@@ -147,6 +148,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     name = args.name
 
+    track_type = {
+        "Track": Track,
+        "AccelTrack": AccelTrack,
+    }[args.track_type]
+
     detections = np.load(f"internal/{name}.npz")
     detections_list = []
     for frame_number, frame_name in enumerate(detections):
@@ -154,7 +160,7 @@ if __name__ == "__main__":
 
     detections_list = filter_detections(detections_list, float(
         args.conf_threshold), float(args.iou_threshold))
-    tracks = track(detections_list, death_time=int(
+    tracks = track(detections_list, track_type, death_time=int(
         args.death_time), max_cost=float(args.max_cost))
 
     track_lives = [track.encode_in_dictionary() for track in tracks]

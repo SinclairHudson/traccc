@@ -2,6 +2,7 @@
 Used for detecting objects in a video, and saving to an output.
 """
 import argparse
+import os
 
 import skvideo.io
 
@@ -29,5 +30,7 @@ if __name__ == "__main__":
     frame_count = int(metadata['video']['@nb_frames'])
 
     detector = model_selector[args.model]()
+    if not os.path.exists(f"internal"):
+        os.system("mkdir internal")  # make internal if it doesn't exist
     detector.detect(
         vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)
