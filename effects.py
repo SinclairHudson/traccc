@@ -249,9 +249,14 @@ class Contrail(Effect):
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
             (x2, y2) = track["states"][i-1][:2]
+            w = track["states"][i][4]
+            kernel_size = int(self.size*w)
+            if kernel_size % 2 == 0:
+                kernel_size += 1 # make odd for gaussian blur
+
             blank = cv2.line(blank, (int(x), int(y)), (int(x2), int(y2)),
-                             color=self.colour, thickness=self.size)
+                             color=self.colour, thickness=kernel_size)
             blank = cv2.GaussianBlur(
-                blank, (self.size, self.size), self.size//2)
+                blank, (kernel_size, kernel_size), kernel_size//2)
 
         return cv2.addWeighted(frame, 1, blank, 1, 0)

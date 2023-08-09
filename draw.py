@@ -52,7 +52,7 @@ if __name__ == "__main__":
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     # TODO make sure width, height is correct in following line
     opencv_out = cv2.VideoWriter(
-        output, fourcc, fps, (width, height))
+        output, fourcc, fps, (height, width))  # TODO explore why sometimes this needs to be flipped.
 
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)

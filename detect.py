@@ -25,6 +25,7 @@ if __name__ == "__main__":
         "RN50": PretrainedRN50Detector
     }
 
+    assert os.path.exists(input_file), f"Input file {input_file} does not exist."
     vid_generator = skvideo.io.vreader(input_file)
     metadata = skvideo.io.ffprobe(input_file)
     frame_count = int(metadata['video']['@nb_frames'])
