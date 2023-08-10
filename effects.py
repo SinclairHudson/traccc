@@ -45,8 +45,12 @@ class FullyConnected(Effect):
         states = [track["states"][max(0, i-1)]  # TODO investigate why this offset looks better
                   for track, i in zip(tracks, state_indexes)]
         # draw a line between each pair of points
-        for i, (x1, y1, _, _, w1, h2) in enumerate(states):
-            for _, (x2, y2, _, _, w2, h2) in enumerate(states[i+1:]):
+        for i, state_1 in enumerate(states):
+            for _, state_2 in enumerate(states[i+1:]):
+                # white lines
+                (x1, y1) = state_1[:2]
+                (x2, y2) = state_2[:2]
+                w2 = state_2[4]
                 out_frame = cv2.line(out_frame, (int(x1), int(y1)), (int(
                     x2), int(y2)), self.colour, thickness=int(w2*self.size))
         return out_frame
@@ -68,8 +72,12 @@ class FullyConnectedNeon(Effect):
             return frame
 
         width = states[0][4]
-        for i, (x1, y1, _, _, w1, h1) in enumerate(states):
-            for _, (x2, y2, _, _, w2, h2) in enumerate(states[i+1:]):
+        for i, state_1 in enumerate(states):
+            for _, state_2 in enumerate(states[i+1:]):
+                # white lines
+                (x1, y1) = state_1[:2]
+                (x2, y2) = state_2[:2]
+                w2 = state_2[4]
                 blank = cv2.line(blank, (int(x1), int(y1)), (int(
                     x2), int(y2)), self.colour, thickness=int(self.size*w2*2))
 
@@ -82,9 +90,12 @@ class FullyConnectedNeon(Effect):
 
         out_frame = cv2.addWeighted(frame, 1, blank, 1, 0)
 
-        for i, (x1, y1, _, _, w1, h1) in enumerate(states):
-            for _, (x2, y2, _, _, w2, h2) in enumerate(states[i+1:]):
+        for i, state_1 in enumerate(states):
+            for _, state_2 in enumerate(states[i+1:]):
                 # white lines
+                (x1, y1) = state_1[:2]
+                (x2, y2) = state_2[:2]
+                w2 = state_2[4]
                 out_frame = cv2.line(out_frame, (int(x1), int(y1)), (int(
                     x2), int(y2)), (255, 255, 255), thickness=int(w2*self.size/2))
 
@@ -98,7 +109,8 @@ class Dot(Effect):
 
     def draw(self, frame, track, frame_number):
         i = frame_number - track["start_frame"]
-        (x, y, vx, vy, w, h) = track["states"][i]
+        (x, y) = track["states"][i][:2]
+        w = track["states"][i][4]
         return cv2.circle(frame, (int(x), int(y)), radius=int(w*self.size/2),
                           color=self.colour, thickness=-1)
 
@@ -123,10 +135,12 @@ class LaggingDot(Effect):
     def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
         i = frame_number - track["start_frame"] - self.time_lag
         if i >= 0:
-            (x, y, vx, vy, w, h) = track["states"][i]
+            (x, y) = track["states"][i][:2]
+            w = track["states"][i][4]
         else:
             # for times where the track is too young
-            (x, y, vx, vy, w, h) = track["states"][0]
+            (x, y) = track["states"][0][:2]
+            w = track["states"][0][4]
         return cv2.circle(frame, (int(x), int(y)), radius=int(w*self.size/2),
                           color=(0, 0, 255), thickness=-1)
 
@@ -143,7 +157,8 @@ class Line(Effect):
         end_line = frame_number - track["start_frame"]
 
         for i in range(start_line, end_line):
-            (x, y, vx, vy, w, h) = track["states"][i]
+            (x, y) = track["states"][i][:2]
+            w = track["states"][i][4]
             (x2, y2) = track["states"][i-1][:2]
             frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
                              color=self.colour, thickness=int(self.size*w))
@@ -174,7 +189,7 @@ class Debug(Effect):
         colour = self.colours[track["id"] % len(self.colours)]
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
-            (x2, y2, _, _, w, _) = track["states"][i-1]
+            (x2, y2, _, _, w, _) = track["states"][i-1][:6]
             frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
                              color=colour, thickness=int(w * self.size))
 
@@ -234,9 +249,14 @@ class Contrail(Effect):
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
             (x2, y2) = track["states"][i-1][:2]
+            w = track["states"][i][4]
+            kernel_size = int(self.size*w)
+            if kernel_size % 2 == 0:
+                kernel_size += 1 # make odd for gaussian blur
+
             blank = cv2.line(blank, (int(x), int(y)), (int(x2), int(y2)),
-                             color=self.colour, thickness=self.size)
+                             color=self.colour, thickness=kernel_size)
             blank = cv2.GaussianBlur(
-                blank, (self.size, self.size), self.size//2)
+                blank, (kernel_size, kernel_size), kernel_size//2)
 
         return cv2.addWeighted(frame, 1, blank, 1, 0)

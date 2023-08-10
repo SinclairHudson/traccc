@@ -6,6 +6,7 @@ RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 RUN pip install filterpy transformers timm sk-video opencv-python pylint
 RUN pip install pytest
+RUN conda install -c conda-forge gradio
 RUN echo 'alias py3="python3"' >> ~/.bashrc
 RUN echo 'alias python="python3"' >> ~/.bashrc
 

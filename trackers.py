@@ -1,10 +1,6 @@
 import numpy as np
 from filterpy.kalman import KalmanFilter
 
-DIM_X = 6  # position_x, position_y, velocity_x, velocity_y, width, height
-DIM_Z = 4  # position, (x, y) in image coordinates (top left is origin), width, height
-
-
 class Track:
     """
     This is a class representing a single track, ideally a single object and its movements
@@ -17,7 +13,7 @@ class Track:
         self.death_time = death_time
 
         assert len(initial_pos) == 5  # cxywh
-        self.kf = KalmanFilter(dim_x=DIM_X, dim_z=DIM_Z)
+        self.kf = KalmanFilter(dim_x=6, dim_z=4)
         # initial pos is xywh
         # state (x vector) is [x, y, vx, vy]
         self.kf.x = np.array([initial_pos[1], initial_pos[2], 0, 0, initial_pos[3], initial_pos[4]])
@@ -78,3 +74,39 @@ class Track:
             "age": self.age
         }
         return life
+
+
+class AccelTrack(Track):
+    def __init__(self, track_id: int, initial_pos: np.ndarray, start_frame: int, death_time: int = 5):
+        self.id = track_id
+        self.prev_states = []  # tracks all previous estimates of position, and velocity
+        self.start_frame = start_frame
+        self.death_time = death_time
+
+        assert len(initial_pos) == 5  # cxywh
+        self.kf = KalmanFilter(dim_x=8, dim_z=4)
+        # initial pos is xywh
+        # state (x vector) is [x, y, vx, vy]
+        self.kf.x = np.array([initial_pos[1], initial_pos[2], 0, 0, initial_pos[3], initial_pos[4], 0, 0])
+        self.kf.F = np.array([[1, 0, 1, 0, 0, 0, 0, 0],  # x = x + vx
+                              [0, 1, 0, 1, 0, 0, 0, 0],  # y = y + vy
+                              [0, 0, 1, 0, 0, 0, 1, 0],  # vx = vx
+                              [0, 0, 0, 1, 0, 0, 0, 1],
+                              [0, 0, 0, 0, 1, 0, 0, 0],
+                              [0, 0, 0, 0, 0, 1, 0, 0],
+                              [0, 0, 0, 0, 0, 0, 1, 0],
+                              [0, 0, 0, 0, 0, 0, 0, 1],
+                              ])  # vy = vy + ay
+
+        self.kf.H = np.array([[1, 0, 0, 0, 0, 0, 0, 0],  # we only measure position
+                              [0, 1, 0, 0, 0, 0, 0, 0],
+                              [0, 0, 0, 0, 1, 0, 0, 0],
+                              [0, 0, 0, 0, 0, 1, 0, 0]
+                              ])
+        self.kf.P *= 1000
+
+        self.age = 0  # in the first frame, age is 0
+        self.time_missing = 0
+        detections = np.load(f"internal/{name}.npz")
+        self.active = True
+        self.prev_measurements = []
