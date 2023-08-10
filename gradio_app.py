@@ -1,6 +1,7 @@
 import gradio as gr
 from detectors import HuggingFaceDETR, PretrainedRN50Detector
 import os
+from draw import run_draw
 
 
 def detect(name: str, model: str = "DETR", input_file: str = None):
@@ -44,12 +45,17 @@ with gr.Blocks() as demo:
         confidence_treshold = gr.Slider(label="Confidence Threshold", minimum=0, maximum=1, value=0.05, interactive=True)
         image_button = gr.Button("Track")
     with gr.Tab("Draw"):
-        text_input = gr.Textbox(placeholder="fireball", label="Project Name")
-        input_file = gr.Textbox(placeholder="io/fireball.mp4", label="Input File", info="The input file \
+        draw_name = gr.Textbox(placeholder="fireball", label="Project Name")
+        draw_input_file = gr.Textbox(placeholder="io/fireball.mp4", label="Input File", info="The input file \
                                 should be the same as the one used in the Detect step.")
         output_file = gr.Textbox(placeholder="io/fireball_with_effect.mp4", label="Output File",
                                 info="The video file to be created")
-        death_time = gr.Slider(label="size", info="size of the effect, proportional to \
+        effect_name = gr.inputs.Radio(["dot", "lagging_dot",
+                                        "line", "highlight_line",
+                                        "contrail", "fully_connected",
+                                        "fully_connected_neon", "debug"], label="Effect")
+        colour = gr.ColorPicker(label="Colour")
+        size = gr.Slider(label="size", info="size of the effect, proportional to \
                                the width of the object being tracked.",
                                minimum=0, maximum=20, value=1, interactive=True)
         length = gr.Slider(label="length", info="length of the effect in frames",
@@ -58,14 +64,17 @@ with gr.Blocks() as demo:
                             a track to be visualized. Increasing this value will remove tracks that \
                             are short-lived, possibly false-positives.",
                                minimum=1, maximum=50, value=7, interactive=True, step=1)
-        model_select = gr.inputs.Radio(["Dot", "Lagging Dot",
-                                        "Line", "Highlight Line",
-                                        "Contrail", "Fully Connected",
-                                        "Fully Connected Neon", "Debug"], label="Effect")
-        colour = gr.ColorPicker(label="Colour")
 
         draw_button = gr.Button("Draw Effect")
 
-    # text_button.click(detect, inputs=text_input, outputs=text_output)
+        #TODO sanitize the input
+        def sanitize_and_run_draw():
+            if not os.path.exists(draw_input_file.value):
+                raise gr.Error("Beans")
+            run_draw(draw_name.value, draw_input_file.value, output_file.value, effect_name.value,
+                    colour.value, size.value, length.value, min_age.value)
+
+        draw_button.click(sanitize_and_run_draw, inputs=None,
+                          outputs=None)
 
 demo.launch(server_name="0.0.0.0")
