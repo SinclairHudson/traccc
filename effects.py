@@ -34,7 +34,7 @@ class Effect(ABC):
 
 
 class FullyConnected(Effect):
-    def __init__(self, colour: Tuple[int], size: float = 1.0):
+    def __init__(self, colour: Tuple[int], length: int, size: float = 1.0):
         self.colour = colour
         self.size = size
 
@@ -57,7 +57,7 @@ class FullyConnected(Effect):
 
 
 class FullyConnectedNeon(Effect):
-    def __init__(self, colour: Tuple[int], size: float = 1.0):
+    def __init__(self, colour: Tuple[int], length: int, size: float = 1.0):
         self.colour = colour
         self.size = size
 
@@ -103,7 +103,7 @@ class FullyConnectedNeon(Effect):
 
 
 class Dot(Effect):
-    def __init__(self, colour: Tuple[int], size: float = 1.0):
+    def __init__(self, colour: Tuple[int], length: int, size: float = 1.0):
         self.colour = colour
         self.size = size
 
@@ -116,9 +116,9 @@ class Dot(Effect):
 
 
 class LaggingDot(Effect):
-    def __init__(self, colour: Tuple[int], time_lag: int = 8, size: float = 1.0):
+    def __init__(self, colour: Tuple[int], length: int = 8, size: float = 1.0):
         self.colour = colour
-        self.time_lag = time_lag
+        self.time_lag = length
         self.size = size
 
     def relevant(self, track: dict, frame_number: int) -> bool:
@@ -146,8 +146,8 @@ class LaggingDot(Effect):
 
 
 class Line(Effect):
-    def __init__(self, colour=(0, 0, 255), length_in_frames: int = 15, size: float = 1.0):
-        self.length_in_frames = length_in_frames
+    def __init__(self, colour=(0, 0, 255), length: int = 15, size: float = 1.0):
+        self.length_in_frames = length
         self.colour = colour
         self.size = size
 
@@ -175,9 +175,10 @@ def draw_x(frame, x, y, colour, size: float):
 
 
 class Debug(Effect):
-    def __init__(self, length_in_frames: int = 15, size: float = 0.15):
+    def __init__(self, color, length_in_frames: int = 15, size: float = 0.15):
         self.length_in_frames = length_in_frames
         self.size = size
+        # color not used
         self.colours = [(255, 0, 0), (0, 255, 0), (0, 0, 255),
                         (255, 0, 230), (252, 132, 0)]
 
@@ -228,6 +229,10 @@ class HighlightLine(Effect):
             blank = cv2.line(blank, (int(x), int(y)), (int(x2), int(y2)),
                              color=self.colour, thickness=self.size)
 
+        width = track["states"][0][4]
+        kernel_size = int(width * self.size * 3)
+        if kernel_size % 2 == 0:
+            kernel_size += 1
         blank = cv2.GaussianBlur(blank, (self.size//2, self.size//2), 0)
 
         return cv2.addWeighted(frame, 1, blank, 1, 0)

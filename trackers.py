@@ -107,6 +107,5 @@ class AccelTrack(Track):
 
         self.age = 0  # in the first frame, age is 0
         self.time_missing = 0
-        detections = np.load(f"internal/{name}.npz")
         self.active = True
         self.prev_measurements = []

@@ -97,7 +97,7 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
                     # print(f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(
                         track_class(next_track_id, frame_detections[i], frame_number,
-                              death_time=death_time))
+                                    death_time=death_time))
                     next_track_id += 1
 
             else:  # no tracks, but detections
@@ -131,14 +131,48 @@ def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5) -> List
     return filtered_detections
 
 
+track_type_dict = {
+    "Track": Track,
+    "AccelTrack": AccelTrack,
+}
+
+
+def run_track(name: str, track_type: str, death_time: int, iou_threshold: float, conf_threshold: float, max_cost: float):
+
+    # load the raw detections
+    detections = np.load(f"internal/{name}.npz")
+    detections_list = []
+    for frame_name in detections:
+        detections_list.append(detections[frame_name])
+
+    # filter out the detections that won't be used
+    detections_list = filter_detections(
+        detections_list, conf_threshold, iou_threshold)
+
+    # run the tracking algorithm
+    tracks = track(
+        detections_list, track_type_dict[track_type], death_time=death_time, max_cost=max_cost)
+
+    # dump to yaml
+    track_lives = [track.encode_in_dictionary() for track in tracks]
+    dictionary = {
+        "detections_file": f"internal/{name}.npz",
+        "tracks": track_lives
+    }
+    with open(f"internal/{name}.yaml", 'w') as f:
+        yaml.safe_dump(dictionary, f)
+
+    return f"Successfully saved {len(track_lives)} tracks to internal/{name}.yaml"
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Tracks objects using detections as input.")
     parser.add_argument("name", help="name of the project to be tracked.")
     parser.add_argument(
-        "--death_time", help="number of frames without an observation before track deletion", default=5)
-    parser.add_argument(
         "--track_type", help="track type", default="Track")
+    parser.add_argument(
+        "--death_time", help="number of frames without an observation before track deletion", default=5)
     parser.add_argument(
         "--iou_threshold", help="IoU threshold used in Non-Max Suppression filtering, must be in the range [0, 1].", default=0.2)
     parser.add_argument(
@@ -148,26 +182,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     name = args.name
 
-    track_type = {
-        "Track": Track,
-        "AccelTrack": AccelTrack,
-    }[args.track_type]
-
-    detections = np.load(f"internal/{name}.npz")
-    detections_list = []
-    for frame_number, frame_name in enumerate(detections):
-        detections_list.append(detections[frame_name])
-
-    detections_list = filter_detections(detections_list, float(
-        args.conf_threshold), float(args.iou_threshold))
-    tracks = track(detections_list, track_type, death_time=int(
-        args.death_time), max_cost=float(args.max_cost))
-
-    track_lives = [track.encode_in_dictionary() for track in tracks]
-    dictionary = {
-        "detections_file": f"internal/{name}.npz",
-        "tracks": track_lives
-    }
-    with open(f"internal/{name}.yaml", 'w') as f:
-        yaml.safe_dump(dictionary, f)
-    print(f"saved {len(track_lives)} tracks to internal/{name}.yaml")
+    message = run_track(args.name, args.track_type, int(args.death_time), float(
+        args.iou_threshold), float(args.conf_threshold), float(args.max_cost))
+    print(message)

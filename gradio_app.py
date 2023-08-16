@@ -1,8 +1,8 @@
 import gradio as gr
 import os
 from draw import run_draw
+from track import run_track
 from detect import run_detect
-import time
 
 with gr.Blocks() as demo:
     gr.Markdown("Create cool ball tracking videos with this one simple trick!")
@@ -20,11 +20,16 @@ with gr.Blocks() as demo:
         detect_button.click(run_detect, inputs=[text_input, model_select, input_file], outputs=[debug_textbox])
 
     with gr.Tab("Track"):
-        text_input = gr.Textbox(placeholder="fireball", label="Project Name")
+        track_name_input = gr.Textbox(placeholder="fireball", label="Project Name")
+        track_type_input = gr.components.Radio(["AccelTrack", "Track"], label="Track Type")
         death_time = gr.Slider(label="Death Time", minimum=1, maximum=20, value=5, interactive=True, step=1)
         iou_threshold = gr.Slider(label="IoU Threshold", minimum=0.01, maximum=1, value=0.20, interactive=True)
         confidence_treshold = gr.Slider(label="Confidence Threshold", minimum=0, maximum=1, value=0.05, interactive=True)
+        max_cost = gr.Slider(label="Maximum Matching Cost", minimum=0, maximum=1000, value=200, interactive=True)
         track_button = gr.Button("Track", variant="primary")
+        track_debug_textbox = gr.Textbox(label="Output")
+        track_button.click(run_track, inputs=[track_name_input, track_type_input, death_time, iou_threshold, confidence_treshold, max_cost], outputs=[track_debug_textbox])
+
     with gr.Tab("Draw"):
         draw_name = gr.Textbox(placeholder="fireball", label="Project Name")
         draw_input_file = gr.Textbox(placeholder="io/fireball.mp4", label="Input File", info="The input file \
@@ -48,18 +53,8 @@ with gr.Blocks() as demo:
 
         draw_button = gr.Button("Draw Effect", variant="primary")
 
-        # draw_button.click(run_draw, inputs=None,
-                          # outputs=None)
-
-# def update(name):
-    # return f"Welcome to Gradio, {name}!"
-
-# with gr.Blocks() as demo:
-    # gr.Markdown("Start typing below and then click **Run** to see the output.")
-    # with gr.Row():
-        # inp = gr.Textbox(placeholder="What is your name?")
-        # out = gr.Textbox()
-    # btn = gr.Button("Run")
-    # btn.click(fn=update, inputs=inp, outputs=out)
+        draw_debug_textbox = gr.Textbox(label="Output")
+        draw_button.click(run_draw, inputs=[draw_name, draw_input_file, output_file, effect_name, colour, size, length, min_age],
+                          outputs=draw_debug_textbox)
 
 demo.queue().launch(server_name="0.0.0.0")

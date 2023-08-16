@@ -7,9 +7,15 @@ from tqdm import tqdm
 from filters import *
 import cv2
 from typing import Tuple
+import gradio as gr
 
+def hex_to_bgr(rgb_hex: str) -> Tuple[int, int, int]:
+    rgb_hex = rgb_hex.lstrip('#')
+    rgb = [int(rgb_hex[i:i+2], 16) for i in (0, 2, 4)]
+    return rgb
 
-def run_draw(name: str, input_file: str, output:str, effect_name: str, colour: Tuple, size: float, length: int, min_age: int):
+def run_draw(name: str, input_video: str, output: str, effect_name: str,
+             colour: str, size: float, length: int, min_age: int, progress=gr.Progress(track_tqdm=True)):
     """
     Inputs are already expected to be sanitized
     """
@@ -23,29 +29,29 @@ def run_draw(name: str, input_file: str, output:str, effect_name: str, colour: T
     # we also probably need to rotate
     height = int(metadata['video']['@height'])
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    # TODO make sure width, height is correct in following line
     opencv_out = cv2.VideoWriter(
-        output, fourcc, fps, (height, width))  # TODO explore why sometimes this needs to be flipped.
+        output, fourcc, fps, (width, height))  # TODO explore why sometimes this needs to be flipped.
 
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
+    rgb_color = hex_to_bgr(colour)
     effect = {
-        "dot": Dot(colour, size),
-        "lagging_dot": LaggingDot(colour, length, size),
-        "line": Line(colour, length, size),
-        "highlight_line": HighlightLine(colour, length, size),
-        "contrail": Contrail(colour, length, size),
-        "fully_connected": FullyConnected(colour, size),
-        "fully_connected_neon": FullyConnectedNeon(colour, size),
-        "debug": Debug(length, size),
-    }[effect_name]
+        "dot": Dot,
+        "lagging_dot": LaggingDot,
+        "line": Line,
+        "highlight_line": HighlightLine,
+        "contrail": Contrail,
+        "fully_connected": FullyConnected,
+        "fully_connected_neon": FullyConnectedNeon,
+        "debug": Debug
+    }[effect_name](rgb_color, length, size)
 
     tracks = track_dictionary["tracks"]
 
     # filter out all the tracks that we deem not good enough
     tracks = [track for track in tracks if standard_filter(
-        track, min_age=int(args.min_age))]
+        track, min_age=min_age)]
 
     print("adding effect")
     # for i, frame in tqdm(enumerate(vid_generator), total=frame_count):
@@ -60,6 +66,7 @@ def run_draw(name: str, input_file: str, output:str, effect_name: str, colour: T
         opencv_out.write(bgr_frame)
 
     opencv_out.release()
+    return f"successfully wrote video io/{output}.mp4"
 
 
 if __name__ == "__main__":
@@ -94,6 +101,6 @@ if __name__ == "__main__":
     else:
         input_video = args.input
 
-    run_draw(name, input_video, effect, args.min_age, length, size, output)
+    run_draw(name, input_video, output, effect, args.colour,
+             size,length, int(args.min_age))
 
-    print(f"successfully wrote video io/{name}_out.mp4")
