@@ -1,28 +1,8 @@
 import gradio as gr
-from detectors import HuggingFaceDETR, PretrainedRN50Detector
 import os
 from draw import run_draw
-
-def detect(name: str, model: str = "DETR", input_file: str = None):
-    if input_file is None:
-        input_file = f"io/{name}.mp4"
-
-    model_selector = {
-        "DETR": HuggingFaceDETR,
-        "RN50": PretrainedRN50Detector
-    }
-
-    assert os.path.exists(input_file), f"Input file {input_file} does not exist."
-    vid_generator = skvideo.io.vreader(input_file)
-    metadata = skvideo.io.ffprobe(input_file)
-    frame_count = int(metadata['video']['@nb_frames'])
-
-    detector = model_selector[args.model]()
-    if not os.path.exists(f"internal"):
-        os.system("mkdir internal")  # make internal if it doesn't exist
-    detector.detect(
-        vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)
-
+from detect import run_detect
+import time
 
 with gr.Blocks() as demo:
     gr.Markdown("Create cool ball tracking videos with this one simple trick!")
@@ -35,20 +15,23 @@ with gr.Blocks() as demo:
         # video_upload = gr.inputs.Video(label="Video File")
         input_file = gr.Textbox(placeholder="io/fireball.mp4", label="Input File")
         model_select = gr.inputs.Radio(["DETR", "RN50"], label="Model")
-        text_button = gr.Button("Detect")
+        detect_button = gr.Button("Detect", variant="primary")
+        debug_textbox = gr.Textbox(label="Output")
+        detect_button.click(run_detect, inputs=[text_input, model_select, input_file], outputs=[debug_textbox])
+
     with gr.Tab("Track"):
         text_input = gr.Textbox(placeholder="fireball", label="Project Name")
         death_time = gr.Slider(label="Death Time", minimum=1, maximum=20, value=5, interactive=True, step=1)
         iou_threshold = gr.Slider(label="IoU Threshold", minimum=0.01, maximum=1, value=0.20, interactive=True)
         confidence_treshold = gr.Slider(label="Confidence Threshold", minimum=0, maximum=1, value=0.05, interactive=True)
-        image_button = gr.Button("Track")
+        track_button = gr.Button("Track", variant="primary")
     with gr.Tab("Draw"):
         draw_name = gr.Textbox(placeholder="fireball", label="Project Name")
         draw_input_file = gr.Textbox(placeholder="io/fireball.mp4", label="Input File", info="The input file \
                                 should be the same as the one used in the Detect step.")
         output_file = gr.Textbox(placeholder="io/fireball_with_effect.mp4", label="Output File",
                                 info="The video file to be created")
-        effect_name = gr.inputs.Radio(["dot", "lagging_dot",
+        effect_name = gr.components.Radio(["dot", "lagging_dot",
                                         "line", "highlight_line",
                                         "contrail", "fully_connected",
                                         "fully_connected_neon", "debug"], label="Effect")
@@ -63,16 +46,20 @@ with gr.Blocks() as demo:
                             are short-lived, possibly false-positives.",
                                minimum=1, maximum=50, value=7, interactive=True, step=1)
 
-        draw_button = gr.Button("Draw Effect")
+        draw_button = gr.Button("Draw Effect", variant="primary")
 
-        #TODO sanitize the input
-        def sanitize_and_run_draw():
-            if not os.path.exists(draw_input_file.value):
-                raise gr.Error("Beans")
-            run_draw(draw_name.value, draw_input_file.value, output_file.value, effect_name.value,
-                    colour.value, size.value, length.value, min_age.value)
+        # draw_button.click(run_draw, inputs=None,
+                          # outputs=None)
 
-        draw_button.click(sanitize_and_run_draw, inputs=None,
-                          outputs=None)
+# def update(name):
+    # return f"Welcome to Gradio, {name}!"
 
-demo.launch(server_name="0.0.0.0")
+# with gr.Blocks() as demo:
+    # gr.Markdown("Start typing below and then click **Run** to see the output.")
+    # with gr.Row():
+        # inp = gr.Textbox(placeholder="What is your name?")
+        # out = gr.Textbox()
+    # btn = gr.Button("Run")
+    # btn.click(fn=update, inputs=inp, outputs=out)
+
+demo.queue().launch(server_name="0.0.0.0")

@@ -6,7 +6,8 @@ RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 RUN pip install filterpy transformers timm sk-video opencv-python pylint
 RUN pip install pytest
-RUN conda install -c conda-forge gradio
+RUN conda install -c conda-forge gradio  # both are needed, for docker build to run
+RUN pip3 install gradio==3.40.0
 RUN echo 'alias py3="python3"' >> ~/.bashrc
 RUN echo 'alias python="python3"' >> ~/.bashrc
 

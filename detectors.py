@@ -39,7 +39,7 @@ class Detector(ABC):
     def detect(self, video, filename="internal/detections.npz", frame_count: int = None):
         detections = self.detect_video(video, frame_count=frame_count)
         np.savez(filename, *detections)
-        print(f"saved detections in {filename}")
+        return f"Successfully saved detections in {filename}"
 
     def display_detections_in_video(self, video: torch.Tensor, outfile: str) -> None:
         detections = self.detect_video(video, bbox_format="xyxy")
