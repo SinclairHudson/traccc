@@ -13,5 +13,6 @@ RUN echo 'alias python="python3"' >> ~/.bashrc
 
 RUN mkdir /balltracking
 
-
 WORKDIR /balltracking
+ADD . /balltracking
+CMD ["python3", "gradio_app.py"]

@@ -55,7 +55,7 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
     next_track_id = 0  # counter for track IDs
     inactive_tracks = []
     tracks = []
-    for frame_number, frame_detections in tqdm(enumerate(detections)):
+    for frame_number, frame_detections in zip(range(len(detections)), tqdm(detections)):
 
         # handle deaths; if a track hasn't been seen in a few frames, deactivate it
         dead_tracks = [track for track in tracks if not track.active]

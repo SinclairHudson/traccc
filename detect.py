@@ -25,7 +25,7 @@ def run_detect(name: str, model: str, input_file: str, progress=gr.Progress(trac
         os.system("mkdir internal")  # make internal if it doesn't exist
     detector.detect(
         vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)
-    return "completed"
+    return f"Completed detection using {model}"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

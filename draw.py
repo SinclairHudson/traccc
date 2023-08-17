@@ -54,8 +54,10 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
         track, min_age=min_age)]
 
     print("adding effect")
+    # TODO workaround to issue https://github.com/gradio-app/gradio/issues/3841
+    # revert to the below line when bug is fixed
     # for i, frame in tqdm(enumerate(vid_generator), total=frame_count):
-    for i, frame in tqdm(enumerate(vid_generator), total=frame_count):
+    for (frame, i) in zip(vid_generator, tqdm(range(frame_count))):
         relevant_tracks = [
             track for track in tracks if effect.relevant(track, i)]
 
@@ -66,7 +68,7 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
         opencv_out.write(bgr_frame)
 
     opencv_out.release()
-    return f"successfully wrote video io/{output}.mp4"
+    return f"successfully wrote video {output}"
 
 
 if __name__ == "__main__":
@@ -78,7 +80,7 @@ if __name__ == "__main__":
         "--effect", help="name of effect you wish to use", default="line")
     parser.add_argument(
         "--min_age", help="tracks below this age don't get drawn", default=0)
-    parser.add_argument("--colour", help="colour of the effect", default="red")
+    parser.add_argument("--colour", help="colour of the effect", default="#ff0000")
     parser.add_argument(
         "--length", help="length of the effect in frames", default=10)
     parser.add_argument(
