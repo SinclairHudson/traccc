@@ -4,6 +4,33 @@ from draw import run_draw
 from track import run_track
 from detect import run_detect
 
+def sanitize_run_detect(project_name: str, model_select: str, input_file: str,
+                        progress=gr.Progress(track_tqdm=True)):
+    if not os.path.exists(input_file):
+        raise gr.Error(f"Input file '{input_file}' does not exist. Is the file" + \
+                       " in the specificed io folder? Is the folder mounted correctly?")
+
+    return run_detect(project_name, model_select, input_file)
+
+def sanitize_run_track(name: str, track_type: str, death_time: int, iou_threshold: float, conf_threshold: float, max_cost: float):
+    if not os.path.exists(f"internal/{name}.npz"):
+        raise gr.Error(f"Couldn't find detections for this project. Is the project name" + \
+                       " correct?")
+
+    return run_track(name, track_type, death_time, iou_threshold, conf_threshold, max_cost)
+
+def sanitize_run_draw(name: str, input_video: str, output: str, effect_name: str,
+             colour: str, size: float, length: int, min_age: int, progress=gr.Progress(track_tqdm=True)):
+
+    if not os.path.exists(f"internal/{name}.yaml"):
+        raise gr.Error(f"Couldn't find tracks for this project. Is the project name" + \
+                       " correct?")
+
+    if not os.path.exists(input_video):
+        raise gr.Error(f"Couldn't find input video '{input_video}'. Is the input video path correct?")
+
+    return run_draw(name, input_video, output, effect_name, colour, size, length, min_age)
+
 with gr.Blocks() as demo:
     gr.Markdown("Create cool ball tracking videos with this one simple trick!")
     with gr.Tab("Detect"):
@@ -14,11 +41,11 @@ with gr.Blocks() as demo:
                                 overwrite previous data!")
         # video_upload = gr.inputs.Video(label="Video File")
         input_file = gr.Textbox(
-            placeholder="io/fireball.mp4", label="Input File")
+            placeholder="fireball.mp4", label="Input File")
         model_select = gr.components.Radio(["DETR", "RN50"], label="Model")
         detect_button = gr.Button("Detect", variant="primary")
         debug_textbox = gr.Textbox(label="Output")
-        detect_button.click(run_detect, inputs=[
+        detect_button.click(sanitize_run_detect, inputs=[
                             text_input, model_select, input_file], outputs=[debug_textbox])
 
     with gr.Tab("Track"):
@@ -36,7 +63,7 @@ with gr.Blocks() as demo:
                              minimum=0, maximum=1000, value=200, interactive=True)
         track_button = gr.Button("Track", variant="primary")
         track_debug_textbox = gr.Textbox(label="Output")
-        track_button.click(run_track, inputs=[track_name_input, track_type_input, death_time,
+        track_button.click(sanitize_run_track, inputs=[track_name_input, track_type_input, death_time,
                            iou_threshold, confidence_treshold, max_cost], outputs=[track_debug_textbox])
 
     with gr.Tab("Draw"):
@@ -63,7 +90,7 @@ with gr.Blocks() as demo:
         draw_button = gr.Button("Draw Effect", variant="primary")
 
         draw_debug_textbox = gr.Textbox(label="Output")
-        draw_button.click(run_draw, inputs=[draw_name, draw_input_file, output_file, effect_name, colour, size, length, min_age],
+        draw_button.click(sanitize_run_draw, inputs=[draw_name, draw_input_file, output_file, effect_name, colour, size, length, min_age],
                           outputs=draw_debug_textbox)
 
 demo.queue().launch(server_name="0.0.0.0")

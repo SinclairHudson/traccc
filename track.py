@@ -4,6 +4,7 @@ track.py. The purpose of this file is to generate tracks from a list of detectio
 import argparse
 from math import sqrt
 from typing import List
+import os
 
 import numpy as np
 import torch
@@ -182,6 +183,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     name = args.name
 
+    assert os.path.exists(
+        f"internal/{name}.npz"), f"Could not find internal/{name}.npz"
     message = run_track(args.name, args.track_type, int(args.death_time), float(
         args.iou_threshold), float(args.conf_threshold), float(args.max_cost))
     print(message)
