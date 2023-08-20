@@ -11,7 +11,7 @@ RUN pip3 install gradio==3.40.0
 RUN echo 'alias py3="python3"' >> ~/.bashrc
 RUN echo 'alias python="python3"' >> ~/.bashrc
 
-RUN mkdir /balltracking
+RUN mkdir -p /balltracking/io
 
 WORKDIR /balltracking
 ADD . /balltracking
