@@ -12,7 +12,8 @@ RUN echo 'alias py3="python3"' >> ~/.bashrc
 RUN echo 'alias python="python3"' >> ~/.bashrc
 
 RUN mkdir -p /balltracking/io
+RUN mkdir -p /balltracking/internal
 
 WORKDIR /balltracking
-ADD . /balltracking
+ADD *.py /balltracking/
 CMD ["python3", "gradio_app.py"]
