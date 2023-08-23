@@ -3,8 +3,10 @@
 ## Detection
 
 Currently, there are two supported detectors:
-DETR - very accurate but quite slow
-RN50 - faily accurate, some false positive, faster
+|Name|Speed|Accuracy|
+|---|---|---|
+|DETR|1/5|4/5|
+|RN50|3/5|2/5, with quite a few false positives|
 
 
 ## Tracking
@@ -18,6 +20,9 @@ Here's an example that illustrates the difference between the two:
 |Constant Velocity|Constant Acceleration|
 |---|---|
 |![constant_vel](../img/line_constant_vel.png)|![constant_acc](../img/line_constant_acc.png)|
+
+Using constant velocity is recommended, though if the system is _losing track of balls_
+then you might want to try constant acceleration.
 
 ## Effects
 

@@ -5,7 +5,6 @@ from typing import Tuple, List
 
 # pylint: disable=invalid-name, no-member
 
-
 class Effect(ABC):
     def __init__(self, colour: Tuple[int], length: int, size: float = 1.0):
         self.colour = colour
