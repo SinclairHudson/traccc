@@ -52,7 +52,7 @@ with gr.Blocks() as demo:
         track_name_input = gr.Textbox(
             placeholder="fireball", label="Project Name")
         track_type_input = gr.components.Radio(
-            ["AccelTrack", "Track"], label="Track Type", value="AccelTrack")
+            ["Constant Acceleration", "Constant Velocity"], label="Track Type", value="Constant Acceleration")
         death_time = gr.Slider(label="Death Time", minimum=1,
                                maximum=20, value=5, interactive=True, step=1)
         iou_threshold = gr.Slider(
@@ -76,7 +76,7 @@ with gr.Blocks() as demo:
                                            "line", "highlight_line",
                                            "contrail", "fully_connected",
                                            "fully_connected_neon", "debug"], label="Effect")
-        colour = gr.ColorPicker(label="Colour")
+        colour = gr.ColorPicker(label="Colour", value="#ff0000")
         size = gr.Slider(label="size", info="size of the effect, proportional to \
                                the width of the object being tracked.",
                                minimum=0, maximum=20, value=1, interactive=True)

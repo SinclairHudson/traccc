@@ -98,7 +98,7 @@ class AccelTrack(Track):
                               [0, 0, 0, 0, 0, 0, 0, 1],
                               ])  # vy = vy + ay
 
-        self.kf.H = np.array([[1, 0, 0, 0, 0, 0, 0, 0],  # we only measure position
+        self.kf.H = np.array([[1, 0, 0, 0, 0, 0, 0, 0],  # we measure position and width and height
                               [0, 1, 0, 0, 0, 0, 0, 0],
                               [0, 0, 0, 0, 1, 0, 0, 0],
                               [0, 0, 0, 0, 0, 1, 0, 0]

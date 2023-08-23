@@ -142,7 +142,7 @@ class LaggingDot(Effect):
             (x, y) = track["states"][0][:2]
             w = track["states"][0][4]
         return cv2.circle(frame, (int(x), int(y)), radius=int(w*self.size/2),
-                          color=(0, 0, 255), thickness=-1)
+                          color=self.colour, thickness=-1)
 
 
 class Line(Effect):
@@ -211,7 +211,7 @@ class Debug(Effect):
 
 
 class HighlightLine(Effect):
-    def __init__(self, colour=(255, 0, 0), length_in_frames: int = 15, size: int = 10):
+    def __init__(self, colour=(255, 0, 0), length_in_frames: int = 15, size: float = 1.0):
         self.length_in_frames = length_in_frames
         self.colour = colour
         self.size = size
@@ -223,17 +223,17 @@ class HighlightLine(Effect):
 
         blank = np.zeros_like(frame, dtype=np.uint8)
 
+        width = track["states"][0][4]
         for i in range(start_line, end_line):
             (x, y) = track["states"][i][:2]
             (x2, y2) = track["states"][i-1][:2]
             blank = cv2.line(blank, (int(x), int(y)), (int(x2), int(y2)),
-                             color=self.colour, thickness=self.size)
+                             color=self.colour, thickness=int(self.size*width))
 
-        width = track["states"][0][4]
-        kernel_size = int(width * self.size * 3)
+        kernel_size = int(min(width, 1) * self.size * 3)
         if kernel_size % 2 == 0:
             kernel_size += 1
-        blank = cv2.GaussianBlur(blank, (self.size//2, self.size//2), 0)
+        blank = cv2.GaussianBlur(blank, (kernel_size, kernel_size), kernel_size//2)
 
         return cv2.addWeighted(frame, 1, blank, 1, 0)
 

@@ -133,8 +133,8 @@ def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5) -> List
 
 
 track_type_dict = {
-    "Track": Track,
-    "AccelTrack": AccelTrack,
+    "Constant Velocity": Track,
+    "Constant Acceleration": AccelTrack,
 }
 
 
