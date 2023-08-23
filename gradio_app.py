@@ -73,7 +73,7 @@ with gr.Blocks() as demo:
         output_file = gr.Textbox(placeholder="io/fireball_with_effect.mp4", label="Output File",
                                  info="The video file to be created")
         effect_name = gr.components.Radio(["dot", "lagging_dot",
-                                           "line", "highlight_line",
+                                           "line", "highlight_line", "neon_line",
                                            "contrail", "fully_connected",
                                            "fully_connected_neon", "debug"], label="Effect")
         colour = gr.ColorPicker(label="Colour", value="#ff0000")

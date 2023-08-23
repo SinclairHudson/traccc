@@ -31,7 +31,7 @@ is changed, because it doesn't have a fixed length.
 |lagging_dot|![lagging_dot](../img/lagging_dot.png)|5/5|
 |line|![line](../img/line.png)|5/5|
 |highlight_line|![highlight_line](../img/highlight_line.png)|2/5|
-|neon_line|![neon_line](../img/highlight_line.png)|2/5|
+|neon_line|![neon_line](../img/neon_line.png)|2/5|
 |contrail|![contrail](../img/contrail.png)|1/5|
 |fully_connected|![fully_connected](../img/fully_connected.png)|4/5|
 |fully_connected_neon|![fully_connected_neon](../img/fully_connected_neon.png)|4/5|
