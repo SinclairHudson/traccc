@@ -6,11 +6,11 @@ from detect import run_detect
 
 def sanitize_run_detect(project_name: str, model_select: str, input_file: str,
                         progress=gr.Progress(track_tqdm=True)):
-    if not os.path.exists(input_file):
+    if not os.path.exists("io/" + input_file):
         raise gr.Error(f"Input file '{input_file}' does not exist. Is the file" + \
                        " in the specificed io folder? Is the folder mounted correctly?")
 
-    return run_detect(project_name, model_select, input_file)
+    return run_detect(project_name, model_select, "io/" + input_file)
 
 def sanitize_run_track(name: str, track_type: str, death_time: int, iou_threshold: float, conf_threshold: float, max_cost: float):
     if not os.path.exists(f"internal/{name}.npz"):
@@ -26,10 +26,10 @@ def sanitize_run_draw(name: str, input_video: str, output: str, effect_name: str
         raise gr.Error(f"Couldn't find tracks for this project. Is the project name" + \
                        " correct?")
 
-    if not os.path.exists(input_video):
+    if not os.path.exists("io/" + input_video):
         raise gr.Error(f"Couldn't find input video '{input_video}'. Is the input video path correct?")
 
-    return run_draw(name, input_video, output, effect_name, colour, size, length, min_age)
+    return run_draw(name, "io/" + input_video, "io/" + output, effect_name, colour, size, length, min_age)
 
 with gr.Blocks() as demo:
     gr.Markdown("Create cool ball tracking videos with this one simple trick!")
@@ -68,9 +68,9 @@ with gr.Blocks() as demo:
 
     with gr.Tab("Draw"):
         draw_name = gr.Textbox(placeholder="fireball", label="Project Name")
-        draw_input_file = gr.Textbox(placeholder="io/fireball.mp4", label="Input File", info="The input file \
+        draw_input_file = gr.Textbox(placeholder="fireball.mp4", label="Input File", info="The input file \
                                 should be the same as the one used in the Detect step.")
-        output_file = gr.Textbox(placeholder="io/fireball_with_effect.mp4", label="Output File",
+        output_file = gr.Textbox(placeholder="fireball_with_effect.mp4", label="Output File",
                                  info="The video file to be created")
         effect_name = gr.components.Radio(["dot", "lagging_dot",
                                            "line", "highlight_line", "neon_line",

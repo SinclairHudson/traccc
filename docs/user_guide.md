@@ -1,4 +1,12 @@
-# Balltracking Gser Guide
+# Balltracking User Guide
+
+This is the user guide for the ball tracking software, usually used via the 
+GUI in the browser. The normal workflow is to go through the 3 stages (Detect, Track, Draw) sequentially
+with a single video. The __Project Name__ must remain the same for all three stages.
+The intermediate data is saved between each step. This means that if you don't like the effect you chose,
+you can go back and change the effect and re-draw the video. Similarly, if you feel the need to adjust
+the tracking parameters, you can go back to that step, re-track all the balls, and then re-draw your effect
+with the new output.
 
 ## Detection
 
@@ -8,6 +16,8 @@ Currently, there are two supported detectors:
 |DETR|1/5|4/5|
 |RN50|3/5|2/5, with quite a few false positives|
 
+Since detection only needs to be run once per video, I would recommend DETR for its
+higher accuracy, even though it'll take a few more minutes compared to RN50.
 
 ## Tracking
 
