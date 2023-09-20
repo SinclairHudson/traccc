@@ -14,11 +14,13 @@ def hex_to_bgr(rgb_hex: str) -> Tuple[int, int, int]:
     rgb = [int(rgb_hex[i:i+2], 16) for i in (0, 2, 4)]
     return rgb
 
-def run_draw(name: str, input_video: str, output: str, effect_name: str,
+def run_draw(name: str, effect_name: str,
              colour: str, size: float, length: int, min_age: int, progress=gr.Progress(track_tqdm=True)):
     """
     Inputs are already expected to be sanitized
     """
+    output = f"internal/{name}_out.mp4"
+    input_video = f"internal/{name}.mp4"
     vid_generator = skvideo.io.vreader(input_video)
     metadata = skvideo.io.ffprobe(input_video)
     frame_count = int(metadata['video']['@nb_frames'])
@@ -69,7 +71,7 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
         opencv_out.write(bgr_frame)
 
     opencv_out.release()
-    return f"successfully wrote video {output}"
+    return output
 
 
 if __name__ == "__main__":

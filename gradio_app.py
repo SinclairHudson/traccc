@@ -4,13 +4,16 @@ from draw import run_draw
 from track import run_track
 from detect import run_detect
 
-def sanitize_run_detect(project_name: str, model_select: str, input_file: str,
+def sanitize_run_detect(video_input, project_name: str, model_select: str,
                         progress=gr.Progress(track_tqdm=True)):
-    if not os.path.exists("io/" + input_file):
-        raise gr.Error(f"Input file '{input_file}' does not exist. Is the file" + \
+    print(video_input)
+    os.system(f"mv {video_input} internal/{project_name}.mp4")
+    video_input = f"internal/{project_name}.mp4"
+    if not os.path.exists(video_input):
+        raise gr.Error(f"Input file '{video_input}' does not exist. Is the file" + \
                        " in the specificed io folder? Is the folder mounted correctly?")
 
-    return run_detect(project_name, model_select, "io/" + input_file)
+    return run_detect(project_name, model_select, video_input)
 
 def sanitize_run_track(name: str, track_type: str, death_time: int, iou_threshold: float, conf_threshold: float, max_cost: float):
     if not os.path.exists(f"internal/{name}.npz"):
@@ -19,34 +22,34 @@ def sanitize_run_track(name: str, track_type: str, death_time: int, iou_threshol
 
     return run_track(name, track_type, death_time, iou_threshold, conf_threshold, max_cost)
 
-def sanitize_run_draw(name: str, input_video: str, output: str, effect_name: str,
+def sanitize_run_draw(name: str, effect_name: str,
              colour: str, size: float, length: int, min_age: int, progress=gr.Progress(track_tqdm=True)):
 
     if not os.path.exists(f"internal/{name}.yaml"):
         raise gr.Error(f"Couldn't find tracks for this project. Is the project name" + \
                        " correct?")
 
-    if not os.path.exists("io/" + input_video):
-        raise gr.Error(f"Couldn't find input video '{input_video}'. Is the input video path correct?")
+    input_video_file = f"internal/{name}.mp4"
+    if not os.path.exists(input_video_file):
+        raise gr.Error(f"Couldn't find input video '{input_video_file}'. Is the input video path correct?")
 
-    return run_draw(name, "io/" + input_video, "io/" + output, effect_name, colour, size, length, min_age)
+    return run_draw(name, effect_name, colour, size, length, min_age)
 
 with gr.Blocks() as demo:
     gr.Markdown("Create cool ball tracking videos with this one simple trick!")
     with gr.Tab("Detect"):
+        video_input = gr.Video()
         text_input = gr.Textbox(placeholder="fireball", label="Project Name",
                                 info="The name of the clip being processed. Remember \
                                 this name and make it unique, because it's used in the \
                                 next two steps as well. Using the same name will \
                                 overwrite previous data!")
         # video_upload = gr.inputs.Video(label="Video File")
-        input_file = gr.Textbox(
-            placeholder="fireball.mp4", label="Input File")
         model_select = gr.components.Radio(["DETR", "RN50"], label="Model")
         detect_button = gr.Button("Detect", variant="primary")
         debug_textbox = gr.Textbox(label="Output")
         detect_button.click(sanitize_run_detect, inputs=[
-                            text_input, model_select, input_file], outputs=[debug_textbox])
+                            video_input, text_input, model_select], outputs=[debug_textbox])
 
     with gr.Tab("Track"):
         track_name_input = gr.Textbox(
@@ -68,10 +71,6 @@ with gr.Blocks() as demo:
 
     with gr.Tab("Draw"):
         draw_name = gr.Textbox(placeholder="fireball", label="Project Name")
-        draw_input_file = gr.Textbox(placeholder="fireball.mp4", label="Input File", info="The input file \
-                                should be the same as the one used in the Detect step.")
-        output_file = gr.Textbox(placeholder="fireball_with_effect.mp4", label="Output File",
-                                 info="The video file to be created")
         effect_name = gr.components.Radio(["dot", "lagging_dot",
                                            "line", "highlight_line", "neon_line",
                                            "contrail", "fully_connected",
@@ -88,9 +87,10 @@ with gr.Blocks() as demo:
                             minimum=1, maximum=50, value=7, interactive=True, step=1)
 
         draw_button = gr.Button("Draw Effect", variant="primary")
+        output_viewer = gr.Video()
 
         draw_debug_textbox = gr.Textbox(label="Output")
-        draw_button.click(sanitize_run_draw, inputs=[draw_name, draw_input_file, output_file, effect_name, colour, size, length, min_age],
-                          outputs=draw_debug_textbox)
+        draw_button.click(sanitize_run_draw, inputs=[draw_name, effect_name, colour, size, length, min_age],
+                          outputs=output_viewer)
 
 demo.queue().launch(server_name="0.0.0.0")
