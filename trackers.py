@@ -98,7 +98,7 @@ class AccelTrack(Track):
                               [0, 0, 0, 0, 0, 0, 0, 1],
                               ])  # vy = vy + ay
 
-        self.kf.H = np.array([[1, 0, 0, 0, 0, 0, 0, 0],  # we only measure position
+        self.kf.H = np.array([[1, 0, 0, 0, 0, 0, 0, 0],  # we measure position and width and height
                               [0, 1, 0, 0, 0, 0, 0, 0],
                               [0, 0, 0, 0, 1, 0, 0, 0],
                               [0, 0, 0, 0, 0, 1, 0, 0]
@@ -107,6 +107,5 @@ class AccelTrack(Track):
 
         self.age = 0  # in the first frame, age is 0
         self.time_missing = 0
-        detections = np.load(f"internal/{name}.npz")
         self.active = True
         self.prev_measurements = []
