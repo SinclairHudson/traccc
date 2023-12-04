@@ -10,9 +10,9 @@ from torchvision.ops import box_convert
 from torchvision.transforms import Normalize
 from torchvision.utils import draw_bounding_boxes
 from tqdm import tqdm
-from transformers import DetrFeatureExtractor, DetrForObjectDetection
+from transformers import DetrFeatureExtractor, DetrForObjectDetection, pipeline
+from typing import List
 
-SPORTS_BALL = 37  # from coco class mapping
 
 
 def show(imgs):
@@ -68,6 +68,7 @@ class PretrainedRN50Detector(Detector):
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
+        SPORTS_BALL = 37  # from coco class mapping
         # TODO batch these calls
         video_detections = []  # list of list of detections
         ZeroOne = Normalize((0, 0, 0), (255, 255, 255))  # divide to 0 to 1
@@ -105,6 +106,7 @@ class HuggingFaceDETR(Detector):
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
+        SPORTS_BALL = 37  # from coco class mapping
         video_detections = []  # list of list of detections
         # num_batches = len(video) // batch_size  # last frames may be cut
 
@@ -128,6 +130,32 @@ class HuggingFaceDETR(Detector):
             xywh[:, 2] *= height
             xywh[:, 1] *= width
             xywh[:, 3] *= width
+            cxywh = torch.cat((conf_scores.unsqueeze(1), xywh),
+                              dim=1)  # add confidences
+            video_detections.append(cxywh.cpu().numpy())
+        return video_detections
+
+
+class OWLVITZeroShot(Detector):
+    def __init__(self):
+        self.feature_extractor = pipeline(model="google/owlvit-base-patch32",
+                                          task="zero-shot-object-detection", device=0)
+
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+    @torch.no_grad()
+    def detect_video(self, video, prompts: List[str], bbox_format="cxcywh", frame_count=None):
+        """
+        video is a generator
+        output is a list of numpy arrays denoting bounding boxes for each frame
+        """
+        video_detections = []  # list of list of detections
+        # num_batches = len(video) // batch_size  # last frames may be cut
+
+        print("detecting balls in the video")
+        for frame in tqdm(video, total=frame_count):
+            width, height, _ = frame.shape
+            # TODO
             cxywh = torch.cat((conf_scores.unsqueeze(1), xywh),
                               dim=1)  # add confidences
             video_detections.append(cxywh.cpu().numpy())
