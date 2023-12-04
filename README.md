@@ -1,4 +1,4 @@
-# ball-tracking
+# Traccc
 
 |||
 |---|---|
@@ -10,7 +10,7 @@ Running this project is fairly demanding.
 A GPU is very helpful for running the neural networks for ball detection quickly.
 At minimum: **5GB** disk space.
 
-# Application quickstart
+# :fire: Application quickstart :fire:
 
 This application uses [docker](www.docker.com).
 Docker should be installed, and following that the command:
