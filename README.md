@@ -1,5 +1,8 @@
 # Traccc
 
+![build and test badge](https://github.com/SinclairHudson/traccc/actions/workflows/docker-build-test.yml/badge.svg)
+![linting](https://github.com/SinclairHudson/traccc/actions/workflows/pylint.yml/badge.svg)
+
 |||
 |---|---|
 |![debug output of the pipeline](img/debug.png)|![sample contrail output](img/contrail.png)|
