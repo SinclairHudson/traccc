@@ -6,6 +6,9 @@
 
 A tool to track sports balls, and add interesting visual effects. 
 
+test :juggling_person:
+test :fire:
+
 Running this project is fairly demanding.
 A GPU is very helpful for running the neural networks for ball detection quickly, but it isn't required.
 At minimum: **10GB** disk space.
