@@ -1,4 +1,4 @@
-from effects import *
+from traccc.effects import *
 import os
 import pytest
 

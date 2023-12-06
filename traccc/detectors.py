@@ -39,7 +39,7 @@ class Detector(ABC):
     def detect(self, video, filename="internal/detections.npz", frame_count: int = None):
         detections = self.detect_video(video, frame_count=frame_count)
         np.savez(filename, *detections)
-        print(f"saved detections in {filename}")
+        return f"Successfully saved detections in {filename}"
 
     def display_detections_in_video(self, video: torch.Tensor, outfile: str) -> None:
         detections = self.detect_video(video, bbox_format="xyxy")
@@ -75,7 +75,8 @@ class PretrainedRN50Detector(Detector):
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
-        for frame in tqdm(video, total=frame_count):
+        # for frame in tqdm(video, total=frame_count):
+        for frame, _ in zip(video, tqdm(range(frame_count))):
             batch = torch.Tensor(frame).unsqueeze(0)
             batch = torch.moveaxis(batch, 3, 1)  # move channels to position 1
             batch = ZeroOne(batch.float())
@@ -111,7 +112,8 @@ class HuggingFaceDETR(Detector):
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
-        for frame in tqdm(video, total=frame_count):
+        # for frame in tqdm(video, total=frame_count):
+        for frame, _ in zip(video, tqdm(range(frame_count))):
             width, height, _ = frame.shape
             inputs = self.feature_extractor(images=frame, return_tensors="pt")
             inputs["pixel_values"] = inputs["pixel_values"].to(self.device)
