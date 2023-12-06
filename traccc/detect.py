@@ -2,29 +2,32 @@
 Used for detecting objects in a video, and saving to an output.
 """
 import argparse
+from typing import List
 import os
 import gradio as gr
 
 import skvideo.io
 
-from traccc.detectors import HuggingFaceDETR, PretrainedRN50Detector
+from traccc.detectors import HuggingFaceDETR, PretrainedRN50Detector, OWLVITZeroShot
 
 model_selector = {
     "DETR": HuggingFaceDETR,
-    "RN50": PretrainedRN50Detector
+    "RN50": PretrainedRN50Detector,
+    "OWLVIT": OWLVITZeroShot
 }
 
-def run_detect(name: str, model: str, input_file: str, progress=gr.Progress(track_tqdm=True)):
+def run_detect(name: str, model: str, input_file: str, prompts: List[str] = None, progress=gr.Progress(track_tqdm=True)):
     vid_generator = skvideo.io.vreader(input_file)
     metadata = skvideo.io.ffprobe(input_file)
     frame_count = int(metadata['video']['@nb_frames'])
 
+    print(frame_count)
     detector = model_selector[model]()
 
     if not os.path.exists(f"internal"):
         os.system("mkdir internal")  # make internal if it doesn't exist
     detector.detect(
-        vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count)
+        vid_generator, filename=f"internal/{name}.npz", frame_count=frame_count, prompts=prompts)
     return f"Completed detection for project {name} using {model}."
 
 if __name__ == "__main__":

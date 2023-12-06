@@ -12,7 +12,7 @@ from torchvision.utils import draw_bounding_boxes
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor, DetrForObjectDetection, pipeline
 from typing import List
-
+from PIL import Image
 
 
 def show(imgs):
@@ -33,11 +33,14 @@ class Detector(ABC):
     def __init__(self):
         raise NotImplementedError
 
-    def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None, prompts: List[str] = None):
         raise NotImplementedError
 
-    def detect(self, video, filename="internal/detections.npz", frame_count: int = None):
-        detections = self.detect_video(video, frame_count=frame_count)
+    def detect(self, video, filename="internal/detections.npz", frame_count: int = None, prompts: List[str] = None):
+        if prompts is None:
+            detections = self.detect_video(video, frame_count=frame_count)
+        else:
+            detections = self.detect_video(video, frame_count=frame_count, prompts=prompts)
         np.savez(filename, *detections)
         return f"Successfully saved detections in {filename}"
 
@@ -156,9 +159,21 @@ class OWLVITZeroShot(Detector):
 
         print("detecting balls in the video")
         for frame in tqdm(video, total=frame_count):
-            width, height, _ = frame.shape
-            # TODO
-            cxywh = torch.cat((conf_scores.unsqueeze(1), xywh),
-                              dim=1)  # add confidences
-            video_detections.append(cxywh.cpu().numpy())
+
+            pipeline_output = self.feature_extractor(image=Image.fromarray(frame), candidate_labels=prompts)
+            scores = []
+            xs = []
+            ys = []
+            widths = []
+            heights = []
+            for detection in pipeline_output:
+                scores.append(detection["score"])
+                xs.append(detection["box"]["xmin"])
+                ys.append(detection["box"]["ymin"])
+                widths.append(detection["box"]["xmax"] - detection["box"]["xmin"])
+                heights.append(detection["box"]["ymax"] - detection["box"]["ymin"])
+            cxywh = np.stack((scores, xs, ys, widths, heights), axis=0)
+            video_detections.append(cxywh)
+        print(video_detections)
+        print(len(video_detections))
         return video_detections

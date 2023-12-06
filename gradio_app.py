@@ -4,13 +4,17 @@ from traccc.draw import run_draw
 from traccc.track import run_track
 from traccc.detect import run_detect
 
-def sanitize_run_detect(project_name: str, model_select: str, input_file: str,
+def sanitize_run_detect(project_name: str, model_select: str, input_file: str, prompts: str = None,
                         progress=gr.Progress(track_tqdm=True)):
     if not os.path.exists("io/" + input_file):
         raise gr.Error(f"Input file '{input_file}' does not exist. Is the file" + \
                        " in the specificed io folder? Is the folder mounted correctly?")
 
-    return run_detect(project_name, model_select, "io/" + input_file)
+    if model_select == "OWLVIT" and prompts is None:
+        raise gr.Error(f"In order to use a zero-shot detector, you must specify what you want detected via a prompt")
+
+    prompts = prompts.split(",") if prompts is not None else None
+    return run_detect(project_name, model_select, "io/" + input_file, prompts)
 
 def sanitize_run_track(name: str, track_type: str, death_time: int, iou_threshold: float, conf_threshold: float, max_cost: float):
     if not os.path.exists(f"internal/{name}.npz"):
@@ -42,11 +46,13 @@ with gr.Blocks() as demo:
         # video_upload = gr.inputs.Video(label="Video File")
         input_file = gr.Textbox(
             placeholder="fireball.mp4", label="Input File")
-        model_select = gr.components.Radio(["DETR", "RN50"], label="Model")
+        model_select = gr.components.Radio(["DETR", "RN50", "OWLVIT"], label="Model")
+        prompts = gr.Textbox(placeholder="juggling ball, dog", label="Prompts (comma separated)")
+
         detect_button = gr.Button("Detect", variant="primary")
         debug_textbox = gr.Textbox(label="Output")
         detect_button.click(sanitize_run_detect, inputs=[
-                            text_input, model_select, input_file], outputs=[debug_textbox])
+                            text_input, model_select, input_file, prompts], outputs=[debug_textbox])
 
     with gr.Tab("Track"):
         track_name_input = gr.Textbox(
