@@ -1,8 +1,8 @@
 import gradio as gr
 import os
-from draw import run_draw
-from track import run_track
-from detect import run_detect
+from traccc.draw import run_draw
+from traccc.track import run_track
+from traccc.detect import run_detect
 
 def sanitize_run_detect(project_name: str, model_select: str, input_file: str,
                         progress=gr.Progress(track_tqdm=True)):

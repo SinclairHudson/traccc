@@ -3,8 +3,8 @@ import pytest
 
 import numpy as np
 
-from track import hungarian_matching, track
-from trackers import Track, AccelTrack
+from traccc.track import hungarian_matching, track
+from traccc.trackers import Track, AccelTrack
 
 
 def test_matching():

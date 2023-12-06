@@ -1,7 +1,7 @@
 import pytest
 import skvideo.io
 
-from detectors import HuggingFaceDETR, PretrainedRN50Detector
+from traccc.detectors import HuggingFaceDETR, PretrainedRN50Detector
 
 
 @pytest.mark.parametrize("DetectorClass", [HuggingFaceDETR, PretrainedRN50Detector])

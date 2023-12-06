@@ -7,7 +7,7 @@ import gradio as gr
 
 import skvideo.io
 
-from detectors import HuggingFaceDETR, PretrainedRN50Detector
+from traccc.detectors import HuggingFaceDETR, PretrainedRN50Detector
 
 model_selector = {
     "DETR": HuggingFaceDETR,

@@ -3,3 +3,4 @@ test/__pycache__/*
 io/*
 internal/*
 *.mp4
+traccc/__pycache__/*

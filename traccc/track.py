@@ -13,7 +13,7 @@ from scipy.optimize import linear_sum_assignment
 from torchvision.ops import box_convert, nms
 from tqdm import tqdm
 
-from trackers import Track, AccelTrack
+from traccc.trackers import Track, AccelTrack
 
 
 def euclidean_distance(track: Track, detection):

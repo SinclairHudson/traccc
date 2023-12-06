@@ -1,7 +1,7 @@
 import pytest
 import skvideo.io
 
-from detectors import HuggingFaceDETR, PretrainedRN50Detector
+from traccc.detectors import HuggingFaceDETR, PretrainedRN50Detector
 
 # TODO integration tests, whole pipeline tests here.
 @pytest.mark.parametrize("DetectorClass", [HuggingFaceDETR, PretrainedRN50Detector])

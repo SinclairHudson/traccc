@@ -1,6 +1,7 @@
 # Traccc
 
 ![build and test badge](https://github.com/SinclairHudson/traccc/actions/workflows/docker-build-test.yml/badge.svg)
+![pytest tests](https://github.com/SinclairHudson/traccc/actions/workflows/pytest.yml/badge.svg)
 ![linting](https://github.com/SinclairHudson/traccc/actions/workflows/pylint.yml/badge.svg)
 
 |||
