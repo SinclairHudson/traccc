@@ -1,0 +1,12 @@
+name: Docker pull and Pytest
+
+on: [push]
+jobs:
+  build:
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v2
+     - name: Pull docker image from the hub
+       run: docker pull sinclairhudson/balltracking
+     - name: Run tests inside the container
+       run: docker run -v $(pwd):/balltracking --ipc host sinclairhudson/balltracking pytest

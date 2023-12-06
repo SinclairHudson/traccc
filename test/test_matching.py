@@ -1,9 +1,10 @@
 from math import sqrt
+import pytest
 
 import numpy as np
 
 from track import hungarian_matching, track
-from trackers import Track
+from trackers import Track, AccelTrack
 
 
 def test_matching():
@@ -87,7 +88,8 @@ def test_more_tracks_than_detections():
     assert cost == sqrt(2) + sqrt(2)
 
 
-def test_track():
+@pytest.mark.parametrize("tracker", [Track, AccelTrack])
+def test_track(tracker):
     """
     Simple test case to test that the tracker can take these detections and string
     them together.
@@ -97,12 +99,13 @@ def test_track():
                   np.array([[0.90, 41, 38, 5, 5]]),
                   np.array([[0.94, 58, 64, 5, 5]])]
 
-    tracks = track(detections)
+    tracks = track(detections, tracker)
     assert len(tracks) == 1
     assert tracks[0].age == 3
 
 
-def test_no_track_switch():
+@pytest.mark.parametrize("tracker", [Track, AccelTrack])
+def test_no_track_switch(tracker):
     """
     Simple test case to ensure the tracker doesn't switch tracks when it shouldn't.
     In this test case, the trajectory of two objects cross, but the tracks shouldn't
@@ -115,7 +118,7 @@ def test_no_track_switch():
                   np.array([[0.99, 80, 80, 0, 0], [0.99, 20, 80, 0, 0]]),
                   np.array([[0.99, 100, 100, 0, 0], [0.99, 0, 100, 0, 0]])]
 
-    tracks = track(detections)
+    tracks = track(detections, tracker)
     assert len(tracks) == 2  # there should only be two tracks
 
     # and there should be a track that connects (0, 0) to (100, 100)
