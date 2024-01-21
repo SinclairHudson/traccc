@@ -25,6 +25,8 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
     numerator, denominator = map(int, fps.split('/'))
     fps = numerator / denominator
     width = int(metadata['video']['@width'])
+    breakpoint()
+    rotation = int(metadata['video']['tag'][0]['@value'])
     # we also probably need to rotate
     height = int(metadata['video']['@height'])
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')

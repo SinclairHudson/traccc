@@ -24,7 +24,7 @@ if __name__ == "__main__":
     detections_list = []
     for frame_number, frame_name in enumerate(detections):
         detections_list.append(detections[frame_name])
-
+    breakpoint()
     print("drawing detections")
     for i, frame in tqdm(enumerate(vid_generator), total=frame_count):
         if len(detections_list[i]) > 0:

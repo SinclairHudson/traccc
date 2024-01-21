@@ -168,11 +168,13 @@ class OWLVITZeroShot(Detector):
             heights = []
             for detection in pipeline_output:
                 scores.append(detection["score"])
-                xs.append(detection["box"]["xmin"])
-                ys.append(detection["box"]["ymin"])
-                widths.append(detection["box"]["xmax"] - detection["box"]["xmin"])
-                heights.append(detection["box"]["ymax"] - detection["box"]["ymin"])
-            cxywh = np.stack((scores, xs, ys, widths, heights), axis=0)
+                w = detection["box"]["xmax"] - detection["box"]["xmin"]
+                h = detection["box"]["ymax"] - detection["box"]["ymin"]
+                xs.append(detection["box"]["xmin"] + w / 2)
+                ys.append(detection["box"]["ymin"] + h / 2)
+                widths.append(w)
+                heights.append(h)
+            cxywh = np.stack((scores, xs, ys, widths, heights), axis=1)
             video_detections.append(cxywh)
         print(video_detections)
         print(len(video_detections))
