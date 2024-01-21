@@ -143,10 +143,10 @@ class HuggingFaceDETR(Detector):
 
 class OWLVITZeroShot(Detector):
     def __init__(self):
-        self.feature_extractor = pipeline(model="google/owlvit-base-patch32",
-                                          task="zero-shot-object-detection", device=0)
-
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        self.feature_extractor = pipeline(model="google/owlvit-base-patch32",
+                                          task="zero-shot-object-detection", device=self.device)
+
 
     @torch.no_grad()
     def detect_video(self, video, prompts: List[str], bbox_format="cxcywh", frame_count=None):
@@ -158,6 +158,7 @@ class OWLVITZeroShot(Detector):
         # num_batches = len(video) // batch_size  # last frames may be cut
 
         print("detecting balls in the video")
+        print(self.device)
         for frame in tqdm(video, total=frame_count):
 
             pipeline_output = self.feature_extractor(image=Image.fromarray(frame), candidate_labels=prompts)
@@ -176,6 +177,4 @@ class OWLVITZeroShot(Detector):
                 heights.append(h)
             cxywh = np.stack((scores, xs, ys, widths, heights), axis=1)
             video_detections.append(cxywh)
-        print(video_detections)
-        print(len(video_detections))
         return video_detections

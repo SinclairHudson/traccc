@@ -25,13 +25,16 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
     numerator, denominator = map(int, fps.split('/'))
     fps = numerator / denominator
     width = int(metadata['video']['@width'])
-    breakpoint()
+    height = int(metadata['video']['@height'])
     rotation = int(metadata['video']['tag'][0]['@value'])
     # we also probably need to rotate
-    height = int(metadata['video']['@height'])
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    opencv_out = cv2.VideoWriter(
-        output, fourcc, fps, (width, height))  # TODO explore why sometimes this needs to be flipped.
+    if rotation == 90 or rotation == 270: # TODO this is janky
+        opencv_out = cv2.VideoWriter(
+            output, fourcc, fps, (height, width))
+    else:
+        opencv_out = cv2.VideoWriter(
+            output, fourcc, fps, (width, height))
 
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
