@@ -1,20 +1,20 @@
-# Windows installation guide
+# Windows Installation Guide
 
 1. Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
 
+This is the hardest step; installing Docker can be a pain.
+
 Docker is an application that allows virtualization, sort of like a virtual machine.
-This ball tracking application only runs natively on the Linux operating system, but Docker allows it
+This tracking application only runs natively on the Linux operating system, but Docker allows it
 to run on all operating systems (like Windows and MacOS). It's possible that after
-installing the application, it will ask you to change some settings in your bios.
+installing the application, it will ask you to change some settings in your BIOS.
 This may seem daunting but it's not that hard. Unfortunately, the process is motherboard-specific,
 so it's hard to write an in-depth guide.
-
-This is the hardest step; installing Docker can be a pain.
 
 ---
 
 2. Pull the docker image 
-Use the docker desktop app to download the docker image `sinclairhudson/balltracking:latest`.
+Use the Docker Desktop app to download the docker image `sinclairhudson/balltracking:latest`.
 This is a version of the app posted to Docker Hub.
 Search for the image in the top search bar of Docker Desktop, and "pull" (download) it from Docker Hub.
 ![docker pull in docker desktop](../img/docker_desktop_search.PNG)

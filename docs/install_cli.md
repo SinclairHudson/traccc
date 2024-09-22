@@ -35,3 +35,5 @@ docker run -v VIDEO_IO:/balltracking/io -p 7860:7860 -it --ipc host --gpus all b
 ```
 
 4. Go to `localhost:7860` in your web browser
+You should see a GUI, like in the image below
+![GUI](../img/browser_gradio_interface.PNG)
