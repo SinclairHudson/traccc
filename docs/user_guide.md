@@ -52,7 +52,7 @@ is changed, because it doesn't have a fixed length.
 |fully_connected_neon|![fully_connected_neon](../img/fully_connected_neon.png)|4/5|
 |debug|![debug](../img/debug.png)|2/5|
 
-## Best Practices:
+## Best Practices when shooting videos:
 
 1. Use a **high framerate**. Most cameras can shoot 60fps now, go as high as you can.
 Every frame is additional information for the tracker, so it's better able to track the balls.

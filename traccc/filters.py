@@ -1,3 +1,6 @@
+"""
+Filters tracks themselves, before visualization.
+"""
 from traccc.trackers import Track
 
 def standard_filter(track: dict, min_age: int=30) -> bool:

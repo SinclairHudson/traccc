@@ -9,7 +9,7 @@
 |![debug output of the pipeline](img/debug.png)|![sample contrail output](img/contrail.png)|
 
 A tool to track sports balls, and add interesting visual effects. 
-It's very fun to apply to juggling 🤹 and sports 🏐🏀 videos .
+It's very fun to apply to juggling 🤹 and sports 🏐🏀 videos.
 
 Running this project is fairly demanding.
 A GPU is very helpful for running the neural networks for ball detection quickly, but it isn't required.
@@ -24,11 +24,18 @@ For MacOS users, see the [MacOS Installation Guide](docs/install_macos.md).
 After installation, you can refer to the [User Guide](docs/user_guide.md) for an
 overview of all the software has to offer.
 
+Running gradio from linux:
+```
+docker build -t traccc .
+docker run -it -p 7860:7860 -v ~/Documents/traccc/io:/balltracking/io traccc /bin/bash
+```
+Then go to `127.0.0.1:7860` in the browser.
+
 
 ## 🖥️ The CLI pipeline 🖥️
 
 This project also features a full command line interface (CLI). This can be used
-inside the running docker container.
+inside the running Docker container.
 Before starting the pipeline, determine a _name_ for your project. For the following
 examples, I'll be using `yellowball`
 

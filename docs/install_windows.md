@@ -3,7 +3,7 @@
 1. Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
 
 Docker is an application that allows virtualization, sort of like a virtual machine.
-This ball tracking application only runs natively on the Linux operating system, but Docker allows it
+This application only runs natively on the Linux operating system, but Docker allows it
 to run on all operating systems (like Windows and MacOS). It's possible that after
 installing the application, it will ask you to change some settings in your bios.
 This may seem daunting but it's not that hard. Unfortunately, the process is motherboard-specific,

@@ -6,6 +6,12 @@ from traccc.detect import run_detect
 
 def sanitize_run_detect(project_name: str, model_select: str, input_file: str, prompts: str = None,
                         progress=gr.Progress(track_tqdm=True)):
+    """
+    Sanitizes the input for running detection. Runs detection if input is valid.
+    Args:
+        project_name: name of the project, the slug for internal files.
+        model_select: string for
+    """
     if not os.path.exists("io/" + input_file):
         raise gr.Error(f"Input file '{input_file}' does not exist. Is the file" + \
                        " in the specificed io folder? Is the folder mounted correctly?")
@@ -37,26 +43,25 @@ def sanitize_run_draw(name: str, input_video: str, output: str, effect_name: str
 
 with gr.Blocks() as demo:
     gr.Markdown("Create cool ball tracking videos with this one simple trick!")
+    project_name_input = gr.Textbox(placeholder="fireball", label="Project Name",
+                            info="The name of the clip being processed. Remember \
+                            this name and make it unique, because it's used in the \
+                            next two steps as well. Using the same name will \
+                            overwrite previous data!")
+    # video_upload = gr.inputs.Video(label="Video File")
+    input_file = gr.Textbox(
+        placeholder="fireball.mp4", label="Input File",
+        info="The name of the file in the io directory.")
     with gr.Tab("Detect"):
-        text_input = gr.Textbox(placeholder="fireball", label="Project Name",
-                                info="The name of the clip being processed. Remember \
-                                this name and make it unique, because it's used in the \
-                                next two steps as well. Using the same name will \
-                                overwrite previous data!")
-        # video_upload = gr.inputs.Video(label="Video File")
-        input_file = gr.Textbox(
-            placeholder="fireball.mp4", label="Input File")
         model_select = gr.components.Radio(["DETR", "RN50", "OWLVIT"], label="Model")
         prompts = gr.Textbox(placeholder="juggling ball, dog", label="Prompts (comma separated)")
 
         detect_button = gr.Button("Detect", variant="primary")
         debug_textbox = gr.Textbox(label="Output")
         detect_button.click(sanitize_run_detect, inputs=[
-                            text_input, model_select, input_file, prompts], outputs=[debug_textbox])
+                            project_name_input, model_select, input_file, prompts], outputs=[debug_textbox])
 
     with gr.Tab("Track"):
-        track_name_input = gr.Textbox(
-            placeholder="fireball", label="Project Name")
         track_type_input = gr.components.Radio(
             ["Constant Acceleration", "Constant Velocity"], label="Track Type", value="Constant Acceleration")
         death_time = gr.Slider(label="Death Time", minimum=1,
@@ -69,13 +74,10 @@ with gr.Blocks() as demo:
                              minimum=0, maximum=1000, value=200, interactive=True)
         track_button = gr.Button("Track", variant="primary")
         track_debug_textbox = gr.Textbox(label="Output")
-        track_button.click(sanitize_run_track, inputs=[track_name_input, track_type_input, death_time,
+        track_button.click(sanitize_run_track, inputs=[project_name_input, track_type_input, death_time,
                            iou_threshold, confidence_treshold, max_cost], outputs=[track_debug_textbox])
 
     with gr.Tab("Draw"):
-        draw_name = gr.Textbox(placeholder="fireball", label="Project Name")
-        draw_input_file = gr.Textbox(placeholder="fireball.mp4", label="Input File", info="The input file \
-                                should be the same as the one used in the Detect step.")
         output_file = gr.Textbox(placeholder="fireball_with_effect.mp4", label="Output File",
                                  info="The video file to be created")
         effect_name = gr.components.Radio(["dot", "lagging_dot",
@@ -96,7 +98,7 @@ with gr.Blocks() as demo:
         draw_button = gr.Button("Draw Effect", variant="primary")
 
         draw_debug_textbox = gr.Textbox(label="Output")
-        draw_button.click(sanitize_run_draw, inputs=[draw_name, draw_input_file, output_file, effect_name, colour, size, length, min_age],
+        draw_button.click(sanitize_run_draw, inputs=[project_name_input, input_file, output_file, effect_name, colour, size, length, min_age],
                           outputs=draw_debug_textbox)
 
 demo.queue().launch(server_name="0.0.0.0")

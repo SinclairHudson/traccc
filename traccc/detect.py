@@ -21,7 +21,7 @@ def run_detect(name: str, model: str, input_file: str, prompts: List[str] = None
     metadata = skvideo.io.ffprobe(input_file)
     frame_count = int(metadata['video']['@nb_frames'])
 
-    print(frame_count)
+    print(f"frame_count: {frame_count}")
     detector = model_selector[model]()
 
     if not os.path.exists(f"internal"):

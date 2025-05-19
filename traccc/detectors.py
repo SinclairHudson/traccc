@@ -14,6 +14,7 @@ from transformers import DetrFeatureExtractor, DetrForObjectDetection, pipeline
 from typing import List
 from PIL import Image
 
+SPORTS_BALL_COCO_CLASS_IDX = 37
 
 def show(imgs):
     """
@@ -66,12 +67,11 @@ class PretrainedRN50Detector(Detector):
         self.model.eval().to(self.device)
 
     @torch.no_grad()
-    def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None, prompts: str = None):
         """
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
-        SPORTS_BALL = 37  # from coco class mapping
         # TODO batch these calls
         video_detections = []  # list of list of detections
         ZeroOne = Normalize((0, 0, 0), (255, 255, 255))  # divide to 0 to 1
@@ -85,8 +85,8 @@ class PretrainedRN50Detector(Detector):
             batch = ZeroOne(batch.float())
             batched_result = self.model(batch.to(self.device))
             for res in batched_result:
-                xyxy = res["boxes"][res["labels"] == SPORTS_BALL]
-                conf = res["scores"][res["labels"] == SPORTS_BALL]
+                xyxy = res["boxes"][res["labels"] == SPORTS_BALL_COCO_CLASS_IDX]
+                conf = res["scores"][res["labels"] == SPORTS_BALL_COCO_CLASS_IDX]
                 xywh = box_convert(xyxy, in_fmt="xyxy", out_fmt=bbox_format)
                 cxywh = torch.cat((conf.unsqueeze(1), xywh),
                                   dim=1)  # add confidences
@@ -105,7 +105,7 @@ class HuggingFaceDETR(Detector):
         self.model.eval().to(self.device)
 
     @torch.no_grad()
-    def detect_video(self, video, bbox_format="cxcywh", frame_count=None):
+    def detect_video(self, video, bbox_format="cxcywh", frame_count=None, prompts: str = None):
         """
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame

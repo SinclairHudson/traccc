@@ -1,5 +1,5 @@
 """
-track.py. The purpose of this file is to generate tracks from a list of detections
+Module to generate tracks from a list of detections.
 """
 import argparse
 from math import sqrt
@@ -114,9 +114,11 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
     return inactive_tracks
 
 
-def filter_detections(detections, conf_threshold=0.0, iou_threshold=0.5) -> List[np.ndarray]:
+def filter_detections(detections,
+                      conf_threshold: float = 0.0,
+                      iou_threshold: float =0.5) -> List[np.ndarray]:
     """
-    Applies confidence filtering and Non-Max Suppression
+    Applies confidence filtering and Non-Max Suppression.
     """
     filtered_detections = []
     for frame_detections in detections:

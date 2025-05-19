@@ -16,5 +16,6 @@ RUN mkdir -p /balltracking/internal
 
 WORKDIR /balltracking
 ADD *.py /balltracking/
+ADD traccc/*.py /balltracking/traccc/
 CMD ["python3", "gradio_app.py"]
 EXPOSE 7860

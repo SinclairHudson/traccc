@@ -1,14 +1,18 @@
+"""
+Module for drawing effects on videos.
+"""
 import yaml
 import argparse
 import skvideo.io
-from traccc.effects import *
+from traccc import effects
 from tqdm import tqdm
-from traccc.filters import *
+from traccc import filters
 import cv2
 from typing import Tuple
 import gradio as gr
 
 def hex_to_bgr(rgb_hex: str) -> Tuple[int, int, int]:
+    """Converts a hex code to BGR."""
     rgb_hex = rgb_hex.lstrip('#')
     rgb = [int(rgb_hex[i:i+2], 16) for i in (0, 2, 4)]
     return rgb
@@ -16,7 +20,7 @@ def hex_to_bgr(rgb_hex: str) -> Tuple[int, int, int]:
 def run_draw(name: str, input_video: str, output: str, effect_name: str,
              colour: str, size: float, length: int, min_age: int, progress=gr.Progress(track_tqdm=True)):
     """
-    Inputs are already expected to be sanitized
+    Inputs are already expected to be sanitized.
     """
     vid_generator = skvideo.io.vreader(input_video)
     metadata = skvideo.io.ffprobe(input_video)
@@ -26,36 +30,36 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
     fps = numerator / denominator
     width = int(metadata['video']['@width'])
     height = int(metadata['video']['@height'])
-    rotation = int(metadata['video']['tag'][0]['@value'])
+    # rotation = int(metadata['video']['tag'][0]['@value'])
     # we also probably need to rotate
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    if rotation == 90 or rotation == 270: # TODO this is janky
-        opencv_out = cv2.VideoWriter(
-            output, fourcc, fps, (height, width))
-    else:
-        opencv_out = cv2.VideoWriter(
-            output, fourcc, fps, (width, height))
+    # if rotation == 90 or rotation == 270: # TODO this is janky
+    opencv_out = cv2.VideoWriter(
+        output, fourcc, fps, (width, height))
+    # else:
+        # opencv_out = cv2.VideoWriter(
+            # output, fourcc, fps, (width, height))
 
     with open(f"internal/{name}.yaml", 'r') as f:
         track_dictionary = yaml.safe_load(f)
 
     rgb_color = hex_to_bgr(colour)
     effect = {
-        "dot": Dot,
-        "lagging_dot": LaggingDot,
-        "line": Line,
-        "highlight_line": HighlightLine,
-        "neon_line": NeonLine,
-        "contrail": Contrail,
-        "fully_connected": FullyConnected,
-        "fully_connected_neon": FullyConnectedNeon,
-        "debug": Debug
+        "dot": effects.Dot,
+        "lagging_dot": effects.LaggingDot,
+        "line": effects.Line,
+        "highlight_line": effects.HighlightLine,
+        "neon_line": effects.NeonLine,
+        "contrail": effects.Contrail,
+        "fully_connected": effects.FullyConnected,
+        "fully_connected_neon": effects.FullyConnectedNeon,
+        "debug": effects.Debug
     }[effect_name](rgb_color, length, size)
 
     tracks = track_dictionary["tracks"]
 
     # filter out all the tracks that we deem not good enough
-    tracks = [track for track in tracks if standard_filter(
+    tracks = [track for track in tracks if filters.standard_filter(
         track, min_age=min_age)]
 
     print("adding effect")
