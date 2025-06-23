@@ -1,4 +1,4 @@
-# Balltracking User Guide
+# Traccc User Guide
 
 This is the user guide for the ball tracking software, usually used via the 
 GUI in the browser. The normal workflow is to go through the 3 stages (Detect, Track, Draw) sequentially
@@ -11,10 +11,11 @@ with the new output.
 ## Detection
 
 Currently, there are two supported detectors:
-|Name|Speed|Accuracy|
+|Name|Speed|Accuracy|Notes|
 |---|---|---|
-|DETR|1/5|4/5|
-|RN50|3/5|2/5, with quite a few false positives|
+|DETR|1/5|4/5|struggles with small objects|
+|RN50|3/5|2/5|quite a few false positives|
+|OWLVIT|3/5|2/5|requires a prompt, struggles with small objects|
 
 Since detection only needs to be run once per video, I would recommend DETR for its
 higher accuracy, even though it'll take a few more minutes compared to RN50.

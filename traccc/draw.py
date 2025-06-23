@@ -77,7 +77,7 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
         opencv_out.write(bgr_frame)
 
     opencv_out.release()
-    return f"successfully wrote video {output}"
+    return f"successfully wrote video {output}."
 
 
 if __name__ == "__main__":
