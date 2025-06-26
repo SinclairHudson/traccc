@@ -63,6 +63,7 @@ and thus making them easier to detect.
 3. Expose for the things you want to track. If the exposure of the camera is too high or too low, the objects will lose detail
 and they'll be almost impossible to detect, because they won't look like much of anything. Even lighting is best,
 so the camera doesn't have to expose for the highlights or the shadows.
-4. Use a **small file to test ideas**. Some of the effects and detections are very slow to run,
+4. The larger the objects are in the video, the better. Zoom in as much as possible.
+5. Use a **small file to test ideas**. Some of the effects and detections are very slow to run,
 especially without a GPU. It's best to test and tweak an effect on a short clip, iterate fast, and then
 apply it to a longer clip once you're sure you have what you want.

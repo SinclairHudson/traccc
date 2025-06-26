@@ -1,3 +1,4 @@
+"""Implements effects, which are drawn on the video based on tracks."""
 from abc import ABC
 import cv2
 import numpy as np
@@ -109,15 +110,15 @@ class LaggingDot(Effect):
         """
         returns True if the frame needs to be modified because of this effect
         """
-        if track["age"] >= self.time_lag and \
-                track["start_frame"] <= frame_number + self.time_lag and \
-                frame_number < track["start_frame"] + track["age"] + self.time_lag:
+        if track["age"] >= self.length and \
+                track["start_frame"] <= frame_number + self.length and \
+                frame_number < track["start_frame"] + track["age"] + self.length:
             return True
         else:
             return False
 
     def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
-        i = frame_number - track["start_frame"] - self.time_lag
+        i = frame_number - track["start_frame"] - self.length
         if i >= 0:
             (x, y) = track["states"][i][:2]
             w = track["states"][i][4]

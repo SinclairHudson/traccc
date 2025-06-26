@@ -2,7 +2,7 @@
 Used for detecting objects in a video, and saving to an output.
 """
 import argparse
-from typing import List
+from typing import List, Optional
 import os
 import gradio as gr
 
@@ -16,7 +16,17 @@ model_selector = {
     "OWLVIT": OWLVITZeroShot
 }
 
-def run_detect(name: str, model: str, input_file: str, prompts: List[str] = None, progress=gr.Progress(track_tqdm=True)):
+def run_detect(name: str, model: str, input_file: str, 
+               prompts: Optional[List[str]] = None, progress=gr.Progress(track_tqdm=True)):
+    """
+    Sets up the video reading and runs the detector.
+    Args:
+        name: Name of the project, the slug.
+        model: Model name to use for detection.
+        input_file: Path to the input video file.
+        prompts: List of prompts for detection.
+        progress: Gradio progress tracker.
+    """
     vid_generator = skvideo.io.vreader(input_file)
     metadata = skvideo.io.ffprobe(input_file)
     frame_count = int(metadata['video']['@nb_frames'])

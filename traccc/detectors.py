@@ -1,3 +1,4 @@
+"""Implements various detectors for object detection in videos."""
 from abc import ABC
 
 import matplotlib.pyplot as plt
@@ -18,7 +19,7 @@ SPORTS_BALL_COCO_CLASS_IDX = 37
 
 def show(imgs):
     """
-    Helper from pytorch tutorials
+    Helper from pytorch tutorials.
     """
     if not isinstance(imgs, list):
         imgs = [imgs]
@@ -37,7 +38,10 @@ class Detector(ABC):
     def detect_video(self, video, bbox_format="cxcywh", frame_count: int = None, prompts: List[str] = None):
         raise NotImplementedError
 
-    def detect(self, video, filename="internal/detections.npz", frame_count: int = None, prompts: List[str] = None):
+    def detect(self, video, filename="internal/detections.npz",
+               frame_count: int = None,
+               prompts: List[str] = None,
+               progress=None):
         if prompts is None:
             detections = self.detect_video(video, frame_count=frame_count)
         else:
@@ -110,7 +114,6 @@ class HuggingFaceDETR(Detector):
         video is a generator
         output is a list of numpy arrays denoting bounding boxes for each frame
         """
-        SPORTS_BALL = 37  # from coco class mapping
         video_detections = []  # list of list of detections
         # num_batches = len(video) // batch_size  # last frames may be cut
 
@@ -128,8 +131,8 @@ class HuggingFaceDETR(Detector):
             outputs["pred_boxes"] = outputs["pred_boxes"].squeeze(0)
             confs = torch.nn.functional.softmax(outputs["logits"], dim=1)
             conf_scores, indices = torch.max(confs, dim=1)
-            xywh = outputs["pred_boxes"][indices == SPORTS_BALL]
-            conf_scores = conf_scores[indices == SPORTS_BALL]
+            xywh = outputs["pred_boxes"][indices == SPORTS_BALL_COCO_CLASS_IDX]
+            conf_scores = conf_scores[indices == SPORTS_BALL_COCO_CLASS_IDX]
 
             xywh[:, 0] *= height
             xywh[:, 2] *= height
@@ -151,8 +154,10 @@ class OWLVITZeroShot(Detector):
     @torch.no_grad()
     def detect_video(self, video, prompts: List[str], bbox_format="cxcywh", frame_count=None):
         """
-        video is a generator
-        output is a list of numpy arrays denoting bounding boxes for each frame
+        Args:
+            video: a generator that goes through frames of the video.
+            prompts: list of strings describing objects.
+            bbox_format: format of the bounding boxes, either "cxcywh" or "xyxy".
         """
         video_detections = []  # list of list of detections
         # num_batches = len(video) // batch_size  # last frames may be cut
