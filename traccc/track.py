@@ -3,7 +3,7 @@ Module to generate tracks from a list of detections.
 """
 import argparse
 from math import sqrt
-from typing import List
+from typing import List, Tuple
 import os
 
 import numpy as np
@@ -16,9 +16,12 @@ from tqdm import tqdm
 from traccc.trackers import Track, AccelTrack
 
 
-def euclidean_distance(track: Track, detection):
+def euclidean_distance(track: Track, detection: np.ndarray) -> float:
     """
-    calculates euclidean distance between a track and a detection in pixel space
+    Calculates euclidean distance between a track and a detection in pixel space.
+    Args:
+        track: The track to calculate the distance from.
+        detection: A detection in (c, x, y, w, h) format.
     """
     assert len(detection) == 5  # confidence, x, y, w, h
     return sqrt((track.kf.x[0] - detection[1]) ** 2 + (track.kf.x[1] - detection[2]) ** 2)
@@ -49,9 +52,18 @@ def hungarian_matching(tracks, detections, cost_function=euclidean_distance, max
     return cost, row_ind, col_ind
 
 
-def track(detections, track_class, death_time: int = 5, max_cost: float = np.infty):
+def track(detections: List[np.ndarray], 
+          track_class, death_time: int = 5, max_cost: float = np.infty):
     """
-    detections is a list of detections, every entry is a frame
+    Tracks objects in a sequence of detections using a Kalman Filter.
+    Args:
+        detections: List of ndarray, where each ndarray is a [N, 5] array, a list of detections.
+            Each detection is a tuple of 5 elements: (c, x, y, w, h).
+        track_class: The class of the track to be used (Track or AccelTrack).
+        death_time: Number of frames without an observation before a track is deleted.
+        max_cost: Maximum cost tolerated to match a track to a detection.
+    Returns:
+        List of tracks that were generated throughout the sequence.
     """
     next_track_id = 0  # counter for track IDs
     inactive_tracks = []
@@ -63,12 +75,8 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
         active_tracks = [track for track in tracks if track.active]
         inactive_tracks.extend(dead_tracks)
 
-        # for dead in dead_tracks:
-        # print(f"killed track {dead.id} tracks on frame {frame_number}")
 
         tracks = active_tracks
-        # print(f"active tracks: {len(active_tracks)}")
-        # print(f"detections: {len(frame_detections)}")
         for track in tracks:
             track.predict()  # advance the Kalman Filter, to get the prior for this timestep
 
@@ -87,15 +95,12 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
                 unmatched_track_indices = set(
                     range(len(tracks))) - set(row_ind)
                 for i in unmatched_track_indices:
-                    # print(
-                    # f"track {tracks[i].id} unmatched on frame {frame_number}")
                     tracks[i].update(None)
 
                 # births
                 unmatched_detection_indices = set(
                     range(len(frame_detections))) - set(col_ind)
                 for i in unmatched_detection_indices:
-                    # print(f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(
                         track_class(next_track_id, frame_detections[i], frame_number,
                                     death_time=death_time))
@@ -104,8 +109,6 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
             else:  # no tracks, but detections
                 # births
                 for detection in frame_detections:
-                    # print(
-                    # f"birthed track {next_track_id} on frame {frame_number}")
                     tracks.append(track_class(next_track_id, detection,
                                   frame_number, death_time=death_time))
                     next_track_id += 1
@@ -114,11 +117,16 @@ def track(detections, track_class, death_time: int = 5, max_cost: float = np.inf
     return inactive_tracks
 
 
-def filter_detections(detections,
+def filter_detections(detections: List[np.ndarray],
                       conf_threshold: float = 0.0,
                       iou_threshold: float =0.5) -> List[np.ndarray]:
     """
     Applies confidence filtering and Non-Max Suppression.
+    Args:
+        detections: List of ndarray, where each ndarray is a [N, 5] array, a list of detections.
+            Each detection is a tuple of 5 elements: (c, x, y, w, h).
+        conf_threshold: Confidence threshold for removing uncertain predictions.
+        iou_threshold: IoU threshold used in Non-Max Suppression filtering.
     """
     filtered_detections = []
     for frame_detections in detections:
@@ -140,7 +148,20 @@ track_type_dict = {
 }
 
 
-def run_track(name: str, track_type: str, death_time: int, iou_threshold: float, conf_threshold: float, max_cost: float):
+def run_track(name: str, track_type: str, death_time: int, 
+              iou_threshold: float, conf_threshold: float, max_cost: float) -> str:
+    """
+    Runs the tracking portion of the pipeline.
+    Args:
+        name: Name of the project to be tracked.
+        track_type: Type of the track to be used (Constant Velocity or Acceleration).
+        death_time: Number of frames without an observation before a track is deleted.
+        iou_threshold: IoU threshold used in Non-Max Suppression filtering.
+        conf_threshold: Confidence threshold for removing uncertain predictions.
+        max_cost: The maximum cost tolerated to match a track to a detection.
+    Returns:
+        A message indicating the success of the operation and the number of tracks saved.
+    """
 
     # load the raw detections
     detections = np.load(f"internal/{name}.npz")

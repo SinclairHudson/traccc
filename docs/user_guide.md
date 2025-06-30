@@ -60,6 +60,7 @@ Every frame is additional information for the tracker, so it's better able to tr
 2. Use a **fast shutter speed**. This is usually implied by high framerate, but technically different.
 A fast shutter speed will **reduce motion blur**, making the balls in every frame look more like balls 
 and thus making them easier to detect.
+3. Because a fast shutter speed is required, you need a **lot of light**. Filming outdoors is best.
 3. Expose for the things you want to track. If the exposure of the camera is too high or too low, the objects will lose detail
 and they'll be almost impossible to detect, because they won't look like much of anything. Even lighting is best,
 so the camera doesn't have to expose for the highlights or the shadows.

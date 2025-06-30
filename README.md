@@ -2,6 +2,10 @@
 
 A tool to track sports balls, and add interesting visual effects. 
 
+Check out [@traccc_app](https://www.instagram.com/traccc_app/) on Instagram for examples of the software in action.
+If you make any video with this software, add @traccc_app as a collaborator on Instagram! 
+I'd love to see what you create.
+
 ![build and test badge](https://github.com/SinclairHudson/traccc/actions/workflows/docker-build-test.yml/badge.svg)
 ![pytest tests](https://github.com/SinclairHudson/traccc/actions/workflows/pytest.yml/badge.svg)
 ![linting](https://github.com/SinclairHudson/traccc/actions/workflows/pylint.yml/badge.svg)

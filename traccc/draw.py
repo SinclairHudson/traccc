@@ -20,7 +20,17 @@ def hex_to_bgr(rgb_hex: str) -> Tuple[int, int, int]:
 def run_draw(name: str, input_video: str, output: str, effect_name: str,
              colour: str, size: float, length: int, min_age: int, progress=gr.Progress(track_tqdm=True)):
     """
+    Runs the drawing portion of the pipeline.
     Inputs are already expected to be sanitized.
+    Args:
+        name: Name of the project to be drawn on.
+        input_video: Path to the input video file.
+        output: Path to the output video file.
+        effect_name: Name of the effect to be used.
+        colour: Colour of the effect in hex format.
+        size: Size of the effect, relative to the width of the object.
+        length: Length of the effect in frames.
+        min_age: Minimum age (in frames) for tracks to be drawn.
     """
     vid_generator = skvideo.io.vreader(input_video)
     metadata = skvideo.io.ffprobe(input_video)
