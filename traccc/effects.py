@@ -189,6 +189,28 @@ class Debug(Effect):
 
         return frame
 
+class TriColor(Effect):
+    def __init__(self, color, length_in_frames: int = 15, size: float = 0.15):
+        self.length_in_frames = length_in_frames
+        self.size = size
+        # color not used
+        self.colours = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+
+    def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:
+        start_line = max(1, frame_number -
+                         self.length_in_frames - track["start_frame"])
+        end_line = frame_number - track["start_frame"]
+
+        colour = self.colours[track["id"] % len(self.colours)]
+        for i in range(start_line, end_line):
+            (x, y) = track["states"][i][:2]
+            (x2, y2, _, _, w, _) = track["states"][i-1][:6]
+            frame = cv2.line(frame, (int(x), int(y)), (int(x2), int(y2)),
+                             color=colour, thickness=int(w * self.size))
+
+        return frame
+
+
 
 class HighlightLine(Effect):
     def draw(self, frame: np.ndarray, track: dict, frame_number: int) -> np.ndarray:

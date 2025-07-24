@@ -80,10 +80,11 @@ with gr.Blocks() as demo:
     with gr.Tab("Draw"):
         output_file = gr.Textbox(placeholder="fireball_with_effect.mp4", label="Output File",
                                  info="The video file to be created")
+        # TODO these need to be in a constants file.
         effect_name = gr.components.Radio(["dot", "lagging_dot",
                                            "line", "highlight_line", "neon_line",
                                            "contrail", "fully_connected",
-                                           "fully_connected_neon", "debug"], label="Effect")
+                                           "fully_connected_neon", "debug", "tricolor"], label="Effect")
         colour = gr.ColorPicker(label="Colour", value="#ff0000")
         size = gr.Slider(label="size", info="size of the effect, proportional to \
                                the width of the object being tracked.",

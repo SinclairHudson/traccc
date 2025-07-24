@@ -63,7 +63,8 @@ def run_draw(name: str, input_video: str, output: str, effect_name: str,
         "contrail": effects.Contrail,
         "fully_connected": effects.FullyConnected,
         "fully_connected_neon": effects.FullyConnectedNeon,
-        "debug": effects.Debug
+        "debug": effects.Debug,
+        "tricolor": effects.TriColor
     }[effect_name](rgb_color, length, size)
 
     tracks = track_dictionary["tracks"]
